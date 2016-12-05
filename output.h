@@ -12,6 +12,6 @@ class Output{
   	Output_format format;
     string file_name;
     int width, height;
-}
+};
 
 #endif

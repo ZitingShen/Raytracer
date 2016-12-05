@@ -5,5 +5,5 @@ class View {
   public:
     glm::vec3 camera, at, up;
     float fovy;
-}
+};
 #endif
