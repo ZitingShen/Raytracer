@@ -38,12 +38,11 @@ int main(){
 	output_file << 255 << endl;
 
 	Ray ray;
-	glm::vec3 color(0, 0, 0);
 	set_up_camera_frame(view, output);
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
 			compute_ray(view, i, j, ray);
-			trace(color, ray, 0);
+			glm::vec3 color = trace(ray, 0);
 			write_pixel(output_file, color, output.format);
 		}
 		output_file << endl; 
