@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cfloat>
+#include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include "view.h"
@@ -16,10 +17,9 @@ class Ray{
     Ray();
 };
 
-void compute_ray(View& view, glm::vec3& left_up, vector<glm::vec3>& pixel_size,
- int i, int j, Ray& ray);
-glm::vec3 get_left_up(View& view, Output& output, 
-  vector<glm::vec3>& pixel_size);
+void compute_ray(View& view, int i, int j, Ray& ray);
+void set_up_camera_frame(View& view, Output& output);
 void trace(glm::vec3& color, Ray& ray, int depth);
-void write_pixel(glm::vec3& color);
+void write_pixel(ofstream& output_file, glm::vec3& color, 
+	Output_format& format);
 #endif

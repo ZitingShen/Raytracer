@@ -35,17 +35,18 @@ int main(){
 	if (output.format == P6) output_file << "P6" << endl;
 	else if (output.format == P3) output_file << "P3" << endl;
 	output_file << output.width << " " << output.height << endl;
-	
+	output_file << 255 << endl;
+
 	Ray ray;
-	glm::vec3 color;
-	vector<glm::vec3> pixel_size;
-	glm::vec3 left_up = get_left_up(view, output, pixel_size);
+	glm::vec3 color(0, 0, 0);
+	set_up_camera_frame(view, output);
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
-			compute_ray(view, left_up, pixel_size, i, j, ray);
+			compute_ray(view, i, j, ray);
 			trace(color, ray, 0);
-			write_pixel(color);
-		} 
+			write_pixel(output_file, color, output.format);
+		}
+		output_file << endl; 
 	}
 	output_file.close();
 }
