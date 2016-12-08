@@ -86,7 +86,6 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   for (int i = 0; i < objects.size(); i++) {
     if (objects[i]->type == SPHERE) {
       Sphere* object = static_cast<Sphere*>(objects[i]);
-      cout << glm::to_string(ray.origin) << endl;
       glm::vec3 co = ray.origin - object->origin;
       float co_length = glm::length(co);
       float a = 1;
@@ -132,8 +131,9 @@ bool is_visible(glm::vec3& point, Light& light,
   light_ray.origin = light.pos;
   light_ray.direction = glm::normalize(point - light.pos);
   Intersect_status status;
-  intersect(light_ray, objects, status);
-  return (status.type == NO_INTERSECTION);
+  glm::vec3 possible_block = intersect(light_ray, objects, status);
+  return (status.type == NO_INTERSECTION 
+    || (glm::length(point - light_ray.origin) < glm::length(possible_block - light_ray.origin)));
 }
 
 glm::vec3 phong(Light& light, glm::vec3& point, glm::vec3& normal, 
