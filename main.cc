@@ -52,7 +52,7 @@ int main(){
 void read_in(Output& output, View& view, vector<Light>& lights,
 	vector<Pigment*>& pigments, vector<Finish>& finishes,
 	vector<Transformation>& transformations, vector<Object*>& objects) {
-	int x, y, z, w;
+	float x, y, z, w;
 	int num_lights, num_pigments, num_finishes;
 	int num_transformations, num_objects;
 	int num_trans, next_trans;
@@ -163,7 +163,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			Polyhedron* new_obj = new Polyhedron(new_object);
 			new_obj->type = POLYHEDRON;
 			cin >> num_planes;
-			for (int j = 0; j < num_planes; i++) {
+			for (int j = 0; j < num_planes; j++) {
 				cin >> x >> y >> z >> w;
 				new_obj->planes.push_back(glm::vec4(x, y, z, w));
 			}

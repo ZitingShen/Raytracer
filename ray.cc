@@ -120,7 +120,21 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
         }
       }
     } else if (objects[i]->type == POLYHEDRON) {
-      //TODO
+      Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
+      for (int j = 0; j < object->planes.size(); j++) {
+        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
+                                                    object->planes[j].y,
+                                                    object->planes[j].z));
+        float t = -(object->planes[j].w + glm::dot(ray.origin, normal))
+          /glm::dot(ray.direction, normal);
+        if (t >= 0 && t < ray.t+0.001) {
+          status.type = YES_INTERSECTION;
+          status.object_id = object->id;
+          status.plane_id = j;
+          point = ray.origin + t*ray.direction;
+          ray.t = t;
+        }
+      }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
 
@@ -148,20 +162,24 @@ bool is_visible(glm::vec3& point, Light& light,
       float delta = b*b - 4*a*c;
       if (delta == 0) {
         float t = -b/(2*a);
-        if (t >= 0 && t < light_ray.t+0.001) {
-          return false;
-        }
+        if (t >= 0 && t < light_ray.t+0.001) return false;
       } else if (delta > 0) {
         float base = -b/(2*a);
         float sqrt = glm::sqrt(delta)/(2*a);
         //float t1 = base-sqrt;
         float t2 = base+sqrt;
-        if (t2 >= 0 && t2 < light_ray.t+0.001) {
-          return false;
-        }
+        if (t2 >= 0 && t2 < light_ray.t+0.001) return false;
       }
     } else if (objects[i]->type == POLYHEDRON) {
-      //TODO
+      Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
+      for (int j = 0; j < object->planes.size(); j++) {
+        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
+                                                    object->planes[j].y,
+                                                    object->planes[j].z));
+        float t = -(object->planes[j].w + glm::dot(light_ray.origin, normal))
+          /glm::dot(light_ray.direction, normal);
+        if (t >= 0 && t < light_ray.t+0.001) return false;
+      }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
     }
@@ -205,5 +223,4 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
   ambient_light *= color;
   diffuse_light *= color;
   return ambient_light + diffuse_light + specular_light;
-  
 }
