@@ -14,7 +14,7 @@
 using namespace std;
 
 void read_in(Output& output, View& view, vector<Light>& lights,
-	vector<Pigment>& pigments, vector<Finish>& finishes,
+	vector<Pigment*>& pigments, vector<Finish>& finishes,
 	vector<Transformation>& transformations, vector<Object*>& objects);
 
 int main(){
@@ -22,7 +22,7 @@ int main(){
 	ofstream output_file;
 	View view;
 	vector<Light> lights;
-	vector<Pigment> pigments;
+	vector<Pigment*> pigments;
 	vector<Finish> finishes;
 	vector<Transformation> transformations;
 	vector<Object*> objects;
@@ -50,7 +50,7 @@ int main(){
 }
 
 void read_in(Output& output, View& view, vector<Light>& lights,
-	vector<Pigment>& pigments, vector<Finish>& finishes,
+	vector<Pigment*>& pigments, vector<Finish>& finishes,
 	vector<Transformation>& transformations, vector<Object*>& objects) {
 	int x, y, z, w;
 	int num_lights, num_pigments, num_finishes;
@@ -86,21 +86,21 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 	for (int i = 0; i < num_pigments; i++) {
 		cin >> type;
 		if (type == "solid") {
-			Solid_pigment new_pigment;
+			Solid_pigment* new_pigment = new Solid_pigment();
 			cin >> x >> y >> z;
-			new_pigment.color = glm::vec3(x, y, z);
-			new_pigment.type = SOLID;
-			new_pigment.id = i;
+			new_pigment->color = glm::vec3(x, y, z);
+			new_pigment->type = SOLID;
+			new_pigment->id = i;
 			pigments.push_back(new_pigment);
 		} else if (type == "checker") {
-			Checker_pigment new_pigment;
+			Checker_pigment* new_pigment = new Checker_pigment();
 			cin >> x >> y >> z;
-			new_pigment.color1 = glm::vec3(x, y, z);
+			new_pigment->color1 = glm::vec3(x, y, z);
 			cin >> x >> y >> z;
-			new_pigment.color2 = glm::vec3(x, y, z);
-			cin >> new_pigment.size;
-			new_pigment.type = CHECKER;
-			new_pigment.id = i;
+			new_pigment->color2 = glm::vec3(x, y, z);
+			cin >> new_pigment->size;
+			new_pigment->type = CHECKER;
+			new_pigment->id = i;
 			pigments.push_back(new_pigment);
 		}
 	}
