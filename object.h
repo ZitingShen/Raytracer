@@ -43,6 +43,6 @@ class Intersect_status{
     int plane_id;
 };
 
-glm::vec3 compute_normal(Object& object, int plane_id, glm::vec3& point);
+glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point);
 
 #endif

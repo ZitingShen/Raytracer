@@ -15,8 +15,7 @@ using namespace std;
 
 void read_in(Output& output, View& view, vector<Light>& lights,
 	vector<Pigment>& pigments, vector<Finish>& finishes,
-	vector<Transformation>& transformations, vector<Object>& objects);
-void output(Output& output);
+	vector<Transformation>& transformations, vector<Object*>& objects);
 
 int main(){
 	Output output;
@@ -26,11 +25,11 @@ int main(){
 	vector<Pigment> pigments;
 	vector<Finish> finishes;
 	vector<Transformation> transformations;
-	vector<Object> objects;
+	vector<Object*> objects;
 	
 	read_in(output, view, lights, pigments, finishes, transformations, objects);
 	
-	output.format = P6;
+	output.format = P3;
 	output_file.open(output.file_name);
 	if (output.format == P6) output_file << "P6" << endl;
 	else if (output.format == P3) output_file << "P3" << endl;
@@ -52,7 +51,7 @@ int main(){
 
 void read_in(Output& output, View& view, vector<Light>& lights,
 	vector<Pigment>& pigments, vector<Finish>& finishes,
-	vector<Transformation>& transformations, vector<Object>& objects) {
+	vector<Transformation>& transformations, vector<Object*>& objects) {
 	int x, y, z, w;
 	int num_lights, num_pigments, num_finishes;
 	int num_transformations, num_objects;
@@ -148,36 +147,32 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		}
 		cin >> type;
 		if (type == "sphere") {
-			Sphere new_obj(new_object);
-			new_obj.type = SPHERE;
+			Sphere* new_obj = new Sphere(new_object);
+			new_obj->type = SPHERE;
 			cin >> x >> y >> z;
-			new_obj.origin = glm::vec3(x, y, z);
-			cin >> new_obj.radius;
+			new_obj->origin = glm::vec3(x, y, z);
+			cin >> new_obj->radius;
 			objects.push_back(new_obj);
 		} else if (type == "plane"){
-			Polyhedron new_obj(new_object);
-			new_obj.type = POLYHEDRON;
+			Polyhedron* new_obj = new Polyhedron(new_object);
+			new_obj->type = POLYHEDRON;
 			cin >> x >> y >> z >> w;
-			new_obj.planes.push_back(glm::vec4(x, y, z, w));
+			new_obj->planes.push_back(glm::vec4(x, y, z, w));
 			objects.push_back(new_obj);
 		} else if (type == "polyhedron") {
-			Polyhedron new_obj(new_object);
-			new_obj.type = POLYHEDRON;
+			Polyhedron* new_obj = new Polyhedron(new_object);
+			new_obj->type = POLYHEDRON;
 			cin >> num_planes;
 			for (int j = 0; j < num_planes; i++) {
 				cin >> x >> y >> z >> w;
-				new_obj.planes.push_back(glm::vec4(x, y, z, w));
+				new_obj->planes.push_back(glm::vec4(x, y, z, w));
 			}
 			objects.push_back(new_obj);
 		} else if (type == "trianglemesh") {
-			Trianglemesh new_obj(new_object);
-			new_obj.type = TRIANGLEMESH;
-			cin >> new_obj.off_file;
+			Trianglemesh* new_obj = new Trianglemesh(new_object);
+			new_obj->type = TRIANGLEMESH;
+			cin >> new_obj->off_file;
 			objects.push_back(new_obj);
 		}
 	}
-}
-
-void output(Output& output) {
-	
 }

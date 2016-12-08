@@ -27,14 +27,14 @@ class Ray{
 void compute_ray(View& view, int i, int j, Ray& ray);
 void set_up_camera_frame(View& view, Output& output);
 glm::vec3 trace(Ray& ray, int depth, 
-	vector<Object>& objects, vector<Light>& lights, 
+	vector<Object*>& objects, vector<Light>& lights, 
 	vector<Finish>& finishes, vector<Pigment>& pigments);
 void write_pixel(ofstream& output_file, glm::vec3& color, 
 	Output_format& format);
-glm::vec3 intersect(Ray& ray, vector<Object>& objects, 
+glm::vec3 intersect(Ray& ray, vector<Object*>& objects, 
   Intersect_status& status);
 bool is_visible(glm::vec3& point, Light& light,
-  vector<Object>& objects);
+  vector<Object*>& objects);
 glm::vec3 phong(Light& light, glm::vec3& point, glm::vec3& normal, 
   vector<Pigment>& pigments);
 #endif
