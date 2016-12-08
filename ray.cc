@@ -62,18 +62,21 @@ glm::vec3 trace(Ray& ray, int depth,
 
 void write_pixel(ofstream& output_file, glm::vec3& color, 
   Output_format& format){
+  color[0] = color[0] > 1 ? 1 : color[0];
+  color[1] = color[1] > 1 ? 1 : color[1];
+  color[2] = color[2] > 1 ? 1 : color[2];
+  color[0] = color[0] < 0 ? 0 : color[0];
+  color[1] = color[1] < 0 ? 0 : color[1];
+  color[2] = color[2] < 0 ? 0 : color[2];
   color *= 255;
-  color[0] = color[0] > 255 ? 255 : color[0];
-  color[1] = color[1] > 255 ? 255 : color[1];
-  color[2] = color[2] > 255 ? 255 : color[2];
   if (format == P3) {
     output_file << (int) color[0] << ' '
                 << (int) color[1] << ' '
                 << (int) color[2] << ' ';
   } else if (format == P6) {
-    output_file << (unsigned char) color[0] << ' '
-                << (unsigned char) color[1] << ' '
-                << (unsigned char) color[2] << ' ';
+    output_file << (unsigned char) color[0]
+                << (unsigned char) color[1]
+                << (unsigned char) color[2];
   }
 }
 
@@ -93,7 +96,7 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       float delta = b*b - 4*a*c;
       if (delta == 0) {
         float t = -b/(2*a);
-        if (t >= 0 && t < ray.t) {
+        if (t >= 0 && t < ray.t+0.001) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
           point = ray.origin + t*ray.direction;
@@ -104,12 +107,12 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
         float sqrt = glm::sqrt(delta)/(2*a);
         float t1 = base-sqrt;
         float t2 = base+sqrt;
-        if (t1 >= 0 && t1 < ray.t) {
+        if (t1 >= 0 && t1 < ray.t+0.001) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
           point = ray.origin + t1*ray.direction;
           ray.t = t1;
-        } else if (t2 >= 0 && t2 < ray.t) {
+        } else if (t2 >= 0 && t2 < ray.t+0.001) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
           point = ray.origin + t2*ray.direction;
@@ -131,11 +134,39 @@ bool is_visible(glm::vec3& point, Light& light,
   Ray light_ray;
   light_ray.origin = light.pos;
   light_ray.direction = glm::normalize(point - light.pos);
-  Intersect_status status;
-  glm::vec3 possible_block = intersect(light_ray, objects, status);
-  return (status.type == NO_INTERSECTION 
-    || (glm::length(point - light_ray.origin) < glm::length(possible_block 
-                                                  - light_ray.origin)));
+  light_ray.t = glm::length(point - light.pos);
+  
+  for (int i = 0; i < objects.size(); i++) {
+    if (objects[i]->type == SPHERE) {
+      Sphere* object = static_cast<Sphere*>(objects[i]);
+      glm::vec3 co = light_ray.origin - object->origin;
+      float co_length = glm::length(co);
+      float a = 1;
+      float b = 2*glm::dot(co, light_ray.direction);
+      float c = co_length*co_length 
+        - object->radius*object->radius;
+      float delta = b*b - 4*a*c;
+      if (delta == 0) {
+        float t = -b/(2*a);
+        if (t >= 0 && t < light_ray.t+0.001) {
+          return false;
+        }
+      } else if (delta > 0) {
+        float base = -b/(2*a);
+        float sqrt = glm::sqrt(delta)/(2*a);
+        //float t1 = base-sqrt;
+        float t2 = base+sqrt;
+        if (t2 >= 0 && t2 < light_ray.t+0.001) {
+          return false;
+        }
+      }
+    } else if (objects[i]->type == POLYHEDRON) {
+      //TODO
+    } else if (objects[i]->type == TRIANGLEMESH) {
+      //TODO
+    }
+  }
+  return true;
 }
 
 glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
