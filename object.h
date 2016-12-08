@@ -8,6 +8,7 @@
 using namespace std;
 
 typedef enum _object_type{SPHERE, POLYHEDRON, TRIANGLEMESH} Object_type;
+typedef enum _intersect_type{NO_INTERSECTION, YES_INTERSECTION} Intersect_type;
 
 class Object {
   public:
@@ -34,5 +35,14 @@ class Trianglemesh: public Object {
     string off_file;
     Trianglemesh(Object& obj);
 };
+
+class Intersect_status{
+  public:
+    Intersect_type type;
+    int object_id;
+    int plane_id;
+};
+
+glm::vec3 compute_normal(Object& object, int plane_id, glm::vec3& point);
 
 #endif

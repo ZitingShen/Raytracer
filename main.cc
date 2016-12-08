@@ -42,7 +42,7 @@ int main(){
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
 			compute_ray(view, i, j, ray);
-			glm::vec3 color = trace(ray, 0);
+			glm::vec3 color = trace(ray, 0, objects, lights, finishes, pigments);
 			write_pixel(output_file, color, output.format);
 		}
 		output_file << endl; 

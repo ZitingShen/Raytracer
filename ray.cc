@@ -28,31 +28,38 @@ void set_up_camera_frame(View& view, Output& output) {
   view.pixel = view.h/output.height;
 }
 
-glm::vec3 trace(Ray& ray, int depth) {
+glm::vec3 trace(Ray& ray, int depth, 
+  vector<Object>& objects, vector<Light>& lights, 
+  vector<Finish>& finishes, vector<Pigment>& pigments) {
   if (depth > TRACE_DEPTH_MAX) return BACKGROUND_COLOR;
 
   glm::vec3 local_color(0, 0, 0);
   glm::vec3 reflected_color(0, 0, 0);
   glm::vec3 transmitted_color(0, 0, 0);
   Intersect_status status;
-  glm::vec3 point = intersect(R, objects, status);
-  if (status == NO_INTERSECTION) return BACKGROUND_COLOR;
-  glm::vec3 normal = compute_normal(point);
+  glm::vec3 point = intersect(ray, objects, status);
+  if (status.type == NO_INTERSECTION) return BACKGROUND_COLOR;
+  glm::vec3 normal = compute_normal(objects[status.object_id], status.plane_id,
+   point);
   
-  for(Light light: lights) {
-    if (is_visible(point, light))
-      local_color += phong (light, point, normal);
-    if (status.specular > 0) {
-      Ray Rr = reflect(ray, point, normal);
+  float specular = finishes[objects[status.object_id].finish].specular;
+  float transmission = finishes[objects[status.object_id].finish].transmission;
+  for(int i = 0; i < lights.size();i++) {
+    if (is_visible(point, lights[i], objects))
+      local_color += phong(lights[i], point, normal, pigments);
+    /*
+    if (specular > 0) {
+      Ray Rr = reflect(ray, point, normal);//TODO
       reflected_color = trace(Rr, depth+1);
     } 
-    if (status.transmission > 0) {
-      Ray Rt = transmit(ray, point, normal);
+    if (transmission > 0) {
+      Ray Rt = transmit(ray, point, normal);//TODO
       transmitted_color = trace(Rt, depth+1);
     }
+    */
   }
-  return (local_color + status.specular*reflected_color
-                      + status.transmission*transmitted_color);
+  return (local_color + specular*reflected_color
+                      + transmission*transmitted_color);
 }
 
 void write_pixel(ofstream& output_file, glm::vec3& color, 
@@ -66,4 +73,64 @@ void write_pixel(ofstream& output_file, glm::vec3& color,
                 << (unsigned char) color[1] << ' '
                 << (unsigned char) color[2] << ' ';
   }
+}
+
+glm::vec3 intersect(Ray& ray, vector<Object>& objects, 
+  Intersect_status& status) {
+  status.type = NO_INTERSECTION;
+  glm::vec3 point(0, 0, 0);
+  for (int i = 0; i < objects.size(); i++) {
+    if (objects[i].type == SPHERE) {
+      Sphere* object = static_cast<Sphere*>(&objects[i]);
+      glm::vec3 co = object->origin - ray.origin;
+      float co_length = glm::length(co);
+      float a = 1;
+      float b = 2*glm::dot(co, ray.direction);
+      float c = co_length*co_length 
+        - object->radius*object->radius;
+      float delta = b*b - 4*a*c;
+      if (delta == 0) {
+        float t = -b/(2*a);
+        if (t >= 0 && t < ray.t) {
+          status.type = YES_INTERSECTION;
+          status.object_id = object->id;
+          point = ray.origin + t*ray.direction;
+        }
+      } else {
+        float base = -b/(2*a);
+        float sqrt = glm::sqrt(delta)/(2*a);
+        float t1 = base-sqrt;
+        float t2 = base+sqrt;
+        if (t1 >= 0 && t1 < ray.t) {
+          status.type = YES_INTERSECTION;
+          status.object_id = object->id;
+          point = ray.origin + t2*ray.direction;
+        } else if (t2 >= 0 && t2 < ray.t) {
+          status.type = YES_INTERSECTION;
+          status.object_id = object->id;
+          point = ray.origin + t2*ray.direction;
+        }
+      }
+    } else if (objects[i].type == POLYHEDRON) {
+
+    } else if (objects[i].type == TRIANGLEMESH) {
+
+    }
+  }
+  return point;
+}
+
+bool is_visible(glm::vec3& point, Light& light,
+  vector<Object>& objects) {
+  Ray light_ray;
+  light_ray.origin = light.pos;
+  light_ray.direction = glm::normalize(point - light.pos);
+  Intersect_status status;
+  intersect(light_ray, objects, status);
+  return (status.type == NO_INTERSECTION);
+}
+
+glm::vec3 phong(Light& light, glm::vec3& point, glm::vec3& normal, 
+  vector<Pigment>& pigments) {
+  return glm::vec3(1, 0, 0); //TODO
 }
