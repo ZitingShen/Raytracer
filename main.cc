@@ -40,14 +40,14 @@ int main(){
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
 			glm::vec3 color(0, 0, 0);
-			for (float anti_alias_x = 0; anti_alias_x <= 0; anti_alias_x+=0.5f) {
-				for (float anti_alias_y = 0; anti_alias_y <= 0; anti_alias_y+=0.5f) {
+			for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
+				for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
 					Ray ray;
 					compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
 					color += trace(ray, 0, objects, lights, finishes, pigments);
 				}
 			}
-			color = color*(1/1.0f);
+			color = color*(1/9.0f);
 			write_pixel(output_file, color, output.format);
 		}
 	}
