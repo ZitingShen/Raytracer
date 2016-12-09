@@ -54,12 +54,11 @@ glm::vec3 trace(Ray& ray, int depth,
     reflected_color = trace(Rr, depth+1, objects, lights, finishes, 
       pigments);
   }
-  /*
   if (finish.transmission > 0) {
-    Ray Rt = transmit(ray, point, normal);//TODO
-    transmitted_color = trace(Rt, depth+1);
+    Ray Rt = transmit(ray, point, normal, finish.refraction);
+    transmitted_color = trace(Rt, depth+1, objects, lights, finishes, 
+      pigments);
   }
-  */
   return (local_color + finish.reflectivity*reflected_color
                       + finish.transmission*transmitted_color);
 }
@@ -239,6 +238,14 @@ Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal) {
   reflected_ray.origin = point + normal*0.01f;
   reflected_ray.direction = glm::normalize(glm::reflect(ray.direction, normal));
   reflected_ray.t = FLT_MAX;
-  //cout << glm::to_string(reflected_ray.direction) << endl;
   return reflected_ray;
+}
+
+Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction) {
+  Ray transmitted_ray;
+  transmitted_ray.origin = point + normal*0.01f;
+  transmitted_ray.direction = glm::normalize(glm::refract(ray.direction, normal, 
+    refraction));
+  transmitted_ray.t = FLT_MAX;
+  return transmitted_ray;
 }

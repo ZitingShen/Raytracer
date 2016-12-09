@@ -39,4 +39,5 @@ bool is_visible(glm::vec3& point, Light& light,
 glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
   Finish& finish, Pigment* pigment);
 Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal);
+Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction);
 #endif
