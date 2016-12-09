@@ -129,9 +129,11 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
     } else if (objects[i]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
       for (unsigned int j = 0; j < object->planes.size(); j++) {
-        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
-                                                    object->planes[j].y,
-                                                    object->planes[j].z));
+        glm::vec3 coeff = glm::vec3(object->planes[j].x, 
+                                    object->planes[j].y,
+                                    object->planes[j].z);
+        if (glm::dot(ray.origin, coeff)+ object->planes[j].w <= 0) continue;
+        glm::vec3 normal = glm::normalize(coeff);
         float t = -(object->planes[j].w + glm::dot(ray.origin, normal))
           /glm::dot(ray.direction, normal);
         if (t >= 0 && t < ray.t-0.01) {
@@ -181,9 +183,11 @@ bool is_visible(glm::vec3& point, Light& light,
     } else if (objects[j]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[j]);
       for (unsigned int k = 0; k < object->planes.size(); k++) {
-        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[k].x, 
-                                                    object->planes[k].y,
-                                                    object->planes[k].z));
+        glm::vec3 coeff = glm::vec3(object->planes[j].x, 
+                                    object->planes[j].y,
+                                    object->planes[j].z);
+        if (glm::dot(light_ray.origin, coeff) <= 0) continue;
+        glm::vec3 normal = glm::normalize(coeff);
         float t = -(object->planes[j].w + glm::dot(light_ray.origin, normal))
           /glm::dot(light_ray.direction, normal);
         if (t >= 0 && t < light_ray.t-0.01) {
@@ -230,7 +234,7 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
       color = checker->color1;
     else color = checker->color2;
   }
-  return (ambient_light+diffuse_light)*color+ specular_light;
+  return (ambient_light + diffuse_light + specular_light)*color;
 }
 
 Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal) {
