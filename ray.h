@@ -13,7 +13,9 @@
 #include "finish.h"
 #include "pigment.h"
 
-#define TRACE_DEPTH_MAX  2
+#define TRACE_DEPTH_MAX           1
+#define RADIAN_TO_DEGREE          57.29578f // 180 over pi
+#define DEGREE_TO_RADIAN          0.00873f
 const glm::vec3 BACKGROUND_COLOR = glm::vec3(0, 0, 0);
 
 class Ray{
@@ -36,4 +38,5 @@ bool is_visible(glm::vec3& point, Light& light,
   vector<Object*>& objects);
 glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
   Finish& finish, Pigment* pigment);
+Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal);
 #endif
