@@ -25,7 +25,7 @@ class Ray{
     float t;
 };
 
-void compute_ray(View& view, int i, int j, Ray& ray);
+void compute_ray(View& view, float i, float j, Ray& ray);
 void set_up_camera_frame(View& view, Output& output);
 glm::vec3 trace(Ray& ray, int depth, 
 	vector<Object*>& objects, vector<Light>& lights, 

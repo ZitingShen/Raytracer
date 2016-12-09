@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void compute_ray(View& view, int i, int j, Ray& ray) {
+void compute_ray(View& view, float i, float j, Ray& ray) {
   ray.origin = view.camera;
   //cout << glm::to_string((view.pixel*j - view.w*0.5f)*view.camera_x
   //+ (view.h*0.5f - view.pixel*i)*view.camera_y
@@ -43,7 +43,7 @@ glm::vec3 trace(Ray& ray, int depth,
   local_color += phong(point, normal, lights[0], ray,
         finish, pigment);
 
-  for(int i = 1; i < lights.size(); i++) {
+  for(unsigned int i = 1; i < lights.size(); i++) {
     if (is_visible(point, lights[i], objects)) {
       local_color += phong(point, normal, lights[i], ray,
         finish, pigment);
@@ -91,7 +91,7 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   Intersect_status& status) {
   status.type = NO_INTERSECTION;
   glm::vec3 point(0, 0, 0);
-  for (int i = 0; i < objects.size(); i++) {
+  for (unsigned int i = 0; i < objects.size(); i++) {
     if (objects[i]->type == SPHERE) {
       Sphere* object = static_cast<Sphere*>(objects[i]);
       glm::vec3 co = ray.origin - object->origin;
@@ -128,7 +128,7 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       }
     } else if (objects[i]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
-      for (int j = 0; j < object->planes.size(); j++) {
+      for (unsigned int j = 0; j < object->planes.size(); j++) {
         glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
                                                     object->planes[j].y,
                                                     object->planes[j].z));
@@ -157,7 +157,7 @@ bool is_visible(glm::vec3& point, Light& light,
   light_ray.direction = glm::normalize(point - light.pos);
   light_ray.t = glm::length(point - light.pos);
     
-  for (int j = 0; j < objects.size(); j++) {
+  for (unsigned int j = 0; j < objects.size(); j++) {
     if (objects[j]->type == SPHERE) {
     Sphere* object = static_cast<Sphere*>(objects[j]);
       glm::vec3 co = light_ray.origin - object->origin;
@@ -180,7 +180,7 @@ bool is_visible(glm::vec3& point, Light& light,
       }
     } else if (objects[j]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[j]);
-      for (int k = 0; k < object->planes.size(); k++) {
+      for (unsigned int k = 0; k < object->planes.size(); k++) {
         glm::vec3 normal = glm::normalize(glm::vec3(object->planes[k].x, 
                                                     object->planes[k].y,
                                                     object->planes[k].z));
