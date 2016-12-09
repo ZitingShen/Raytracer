@@ -29,7 +29,7 @@ int main(){
 	
 	read_in(output, view, lights, pigments, finishes, transformations, objects);
 	
-	output.format = P3;
+	output.format = P6;
 	output_file.open(output.file_name);
 	if (output.format == P6) output_file << "P6" << endl;
 	else if (output.format == P3) output_file << "P3" << endl;
@@ -44,6 +44,7 @@ int main(){
 				for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
 					Ray ray;
 					compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
+			//		compute_ray(view, i, j, ray);
 					color += trace(ray, 0, objects, lights, finishes, pigments);
 				}
 			}

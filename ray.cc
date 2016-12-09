@@ -49,6 +49,7 @@ glm::vec3 trace(Ray& ray, int depth,
         finish, pigment);
     }
   }
+  
   if (finish.reflectivity > 0) {
     Ray Rr = reflect(ray, point, normal);
     reflected_color = trace(Rr, depth+1, objects, lights, finishes, 
