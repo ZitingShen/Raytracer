@@ -128,21 +128,66 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       }
     } else if (objects[i]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
+      float min_t = -FLT_MAX;
+      float max_t = FLT_MAX;
+      int min_plane = -1;
+      int max_plane = -1;
       for (unsigned int j = 0; j < object->planes.size(); j++) {
-        glm::vec3 coeff = glm::vec3(object->planes[j].x, 
-                                    object->planes[j].y,
-                                    object->planes[j].z);
-        if (glm::dot(ray.origin, coeff)+ object->planes[j].w <= 0) continue;
-        glm::vec3 normal = glm::normalize(coeff);
-        float t = -(object->planes[j].w + glm::dot(ray.origin, normal))
-          /glm::dot(ray.direction, normal);
-        if (t >= 0 && t < ray.t-0.01) {
-          status.type = YES_INTERSECTION;
-          status.object_id = object->id;
-          status.plane_id = j;
-          point = ray.origin + t*ray.direction;
-          ray.t = t;
+        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
+                                                    object->planes[j].y,
+                                                    object->planes[j].z));
+        float denominator = glm::dot(ray.direction, normal);
+        float nominator = -(object->planes[j].w + glm::dot(ray.origin, normal));
+        if (denominator == 0) {
+          if (nominator < 0) {
+            // No intersection with the polygon.
+            min_t = -1;
+            max_t = -1;
+            j = object->planes.size();
+            continue;
+          } else { // ignore the face
+            continue;
+          }
         }
+        float t = nominator / denominator;
+        if (denominator < 0) { // entering
+          if (t > min_t) {
+            min_t = t;
+            min_plane = j;
+            if (min_t > max_t) {
+              // No intersection with the polygon.
+              min_t = -1;
+              max_t = -1;
+              j = object->planes.size();
+              continue; 
+            }
+          }
+        } else { // leaving
+          if (t < max_t) {
+            max_t = t;
+            max_plane = j;
+            if (min_t > max_t) {
+              // No intersection with the polygon.
+              min_t = -1;
+              max_t = -1;
+              j = object->planes.size();
+              continue; 
+            }
+          }
+        }
+      }
+      if (min_t >= 0 && min_t < ray.t) {
+        status.type = YES_INTERSECTION;
+        status.object_id = object->id;
+        status.plane_id = min_plane;
+        point = ray.origin + min_t*ray.direction;
+        ray.t = min_t;
+      } else if ((max_t >= 0 && max_t < FLT_MAX) && max_t < ray.t) {
+        status.type = YES_INTERSECTION;
+        status.object_id = object->id;
+        status.plane_id = max_plane;
+        point = ray.origin + max_t*ray.direction;
+        ray.t = max_t;
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
@@ -159,9 +204,9 @@ bool is_visible(glm::vec3& point, Light& light,
   light_ray.direction = glm::normalize(point - light.pos);
   light_ray.t = glm::length(point - light.pos);
     
-  for (unsigned int j = 0; j < objects.size(); j++) {
-    if (objects[j]->type == SPHERE) {
-    Sphere* object = static_cast<Sphere*>(objects[j]);
+  for (unsigned int i = 0; i < objects.size(); i++) {
+    if (objects[i]->type == SPHERE) {
+    Sphere* object = static_cast<Sphere*>(objects[i]);
       glm::vec3 co = light_ray.origin - object->origin;
       float co_length = glm::length(co);
       float a = 1;
@@ -180,21 +225,58 @@ bool is_visible(glm::vec3& point, Light& light,
         if (t1 >= 0 && t1 < light_ray.t-0.01) return false;
         if (t2 >= 0 && t2 < light_ray.t-0.01) return false;
       }
-    } else if (objects[j]->type == POLYHEDRON) {
-      Polyhedron* object = static_cast<Polyhedron*>(objects[j]);
-      for (unsigned int k = 0; k < object->planes.size(); k++) {
-        glm::vec3 coeff = glm::vec3(object->planes[j].x, 
-                                    object->planes[j].y,
-                                    object->planes[j].z);
-        if (glm::dot(light_ray.origin, coeff) <= 0) continue;
-        glm::vec3 normal = glm::normalize(coeff);
-        float t = -(object->planes[j].w + glm::dot(light_ray.origin, normal))
-          /glm::dot(light_ray.direction, normal);
-        if (t >= 0 && t < light_ray.t-0.01) {
-          return false;
+    } else if (objects[i]->type == POLYHEDRON) {
+      Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
+      float min_t = -FLT_MAX;
+      float max_t = FLT_MAX;
+      for (unsigned int j = 0; j < object->planes.size(); j++) {
+        glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
+                                                    object->planes[j].y,
+                                                    object->planes[j].z));
+        float denominator = glm::dot(light_ray.direction, normal);
+        float nominator = -(object->planes[j].w + glm::dot(light_ray.origin, normal));
+        if (denominator == 0) {
+          if (nominator < 0) {
+            // No intersection with the polygon.
+            min_t = -1;
+            max_t = -1;
+            j = object->planes.size();
+            continue;
+          } else { // ignore the face
+            continue;
+          }
+        }
+        float t = nominator / denominator;
+        if (denominator < 0) { // entering
+          if (t > min_t) {
+            min_t = t;
+            if (min_t > max_t) {
+              // No intersection with the polygon.
+              min_t = -1;
+              max_t = -1;
+              j = object->planes.size();
+              continue; 
+            }
+          }
+        } else { // leaving
+          if (t < max_t) {
+            max_t = t;
+            if (min_t > max_t) {
+              // No intersection with the polygon.
+              min_t = -1;
+              max_t = -1;
+              j = object->planes.size();
+              continue; 
+            }
+          }
         }
       }
-    } else if (objects[j]->type == TRIANGLEMESH) {
+      if (min_t >= 0 && min_t < light_ray.t - 0.01f) {
+        return false;
+      } else if ((max_t >= 0 && max_t < FLT_MAX) && max_t < light_ray.t - 0.01f) {
+        return false;
+      }
+    } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
     }
   }
