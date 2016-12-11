@@ -36,6 +36,7 @@ glm::vec3 trace(Ray& ray, int depth,
   if (status.type == NO_INTERSECTION) return BACKGROUND_COLOR;
   glm::vec3 normal = compute_normal(objects[status.object_id], status.plane_id,
    point);
+  if (status.reverse_normal) normal *= -1.0f;
   
   Finish& finish = finishes[objects[status.object_id]->finish];
   Pigment* pigment = pigments[objects[status.object_id]->pigment];
@@ -56,7 +57,10 @@ glm::vec3 trace(Ray& ray, int depth,
       pigments);
   }
   if (finish.transmission > 0) {
-    Ray Rt = transmit(ray, point, normal, finish.refraction);
+    float eta;
+    if (status.reverse_normal) eta = finish.refraction;
+    else eta = 1.0f/finish.refraction;
+    Ray Rt = transmit(ray, point, normal, eta);
     transmitted_color = trace(Rt, depth+1, objects, lights, finishes, 
       pigments);
   }
@@ -119,16 +123,18 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
           status.object_id = object->id;
           point = ray.origin + t1*ray.direction;
           ray.t = t1;
+          status.reverse_normal = false;
         } else if (t2 >= 0 && t2 < ray.t-0.01) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
           point = ray.origin + t2*ray.direction;
           ray.t = t2;
+          status.reverse_normal = true;
         }
       }
     } else if (objects[i]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
-      float min_t = -FLT_MAX;
+      float min_t = 0;
       float max_t = FLT_MAX;
       int min_plane = -1;
       int max_plane = -1;
@@ -176,18 +182,20 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
           }
         }
       }
-      if (min_t >= 0 && min_t < ray.t) {
+      if (min_t > 0 && min_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = min_plane;
         point = ray.origin + min_t*ray.direction;
         ray.t = min_t;
-      } else if ((max_t >= 0 && max_t < FLT_MAX) && max_t < ray.t) {
+        status.reverse_normal = false;
+      } else if (max_t > 0 && max_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = max_plane;
         point = ray.origin + max_t*ray.direction;
         ray.t = max_t;
+        status.reverse_normal = true;
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
@@ -227,7 +235,7 @@ bool is_visible(glm::vec3& point, Light& light,
       }
     } else if (objects[i]->type == POLYHEDRON) {
       Polyhedron* object = static_cast<Polyhedron*>(objects[i]);
-      float min_t = -FLT_MAX;
+      float min_t = 0;
       float max_t = FLT_MAX;
       for (unsigned int j = 0; j < object->planes.size(); j++) {
         glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
@@ -271,9 +279,9 @@ bool is_visible(glm::vec3& point, Light& light,
           }
         }
       }
-      if (min_t >= 0 && min_t < light_ray.t - 0.01f) {
+      if (min_t > 0 && min_t < light_ray.t - 0.01f) {
         return false;
-      } else if ((max_t >= 0 && max_t < FLT_MAX) && max_t < light_ray.t - 0.01f) {
+      } else if (max_t > 0 && max_t < light_ray.t - 0.01f) {
         return false;
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
@@ -298,10 +306,10 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
     glm::vec3 h = glm::normalize((l + v) * 0.5f);
 
     diffuse_light = finish.diffuse * light.color
-      * glm::max(glm::dot(l, normal), 0.0f)
+      * glm::dot(l, normal)
       /(light.a + light.b*d + light.c*d*d);
     specular_light = finish.specular * glm::vec3(1, 1, 1) 
-      * glm::pow(glm::max(glm::dot(h, normal), 0.0f), finish.shininess)
+      * glm::pow(glm::dot(h, normal), finish.shininess)
       /(light.a + light.b*d + light.c*d*d);
   }
   glm::vec3 color(0, 0, 0);
@@ -316,7 +324,7 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
       color = checker->color1;
     else color = checker->color2;
   }
-  return (ambient_light + diffuse_light + specular_light)*color;
+  return (ambient_light + diffuse_light)*color + specular_light;
 }
 
 Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal) {
@@ -330,7 +338,7 @@ Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal) {
 
 Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction) {
   Ray transmitted_ray;
-  transmitted_ray.origin = point + normal*0.01f;
+  transmitted_ray.origin = point - normal*0.01f;
   transmitted_ray.direction = glm::normalize(glm::refract(ray.direction, normal, 
     refraction));
   transmitted_ray.t = FLT_MAX;
