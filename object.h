@@ -58,6 +58,7 @@ class Intersect_status{
     Intersect_type type;
     int object_id;
     int plane_id;
+    bool reverse_normal = false;
 };
 
 glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point);
