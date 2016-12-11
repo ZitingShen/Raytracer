@@ -6,6 +6,7 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/intersect.hpp>
 #include "view.h"
 #include "output.h"
 #include "object.h"
@@ -22,22 +23,41 @@ class Ray{
 	public:
 		glm::vec3 origin;
     glm::vec3 direction;
-    float t;
+    float t; // constant o + td
 };
 
 void compute_ray(View& view, float i, float j, Ray& ray);
+
 void set_up_camera_frame(View& view, Output& output);
-glm::vec3 trace(Ray& ray, int depth, 
-	vector<Object*>& objects, vector<Light>& lights, 
+
+glm::vec3 trace(Ray& ray, int depth,
+	vector<Object*>& objects, vector<Light>& lights,
 	vector<Finish>& finishes, vector<Pigment*>& pigments);
-void write_pixel(ofstream& output_file, glm::vec3& color, 
+
+void write_pixel(ofstream& output_file, glm::vec3& color,
 	Output_format& format);
-glm::vec3 intersect(Ray& ray, vector<Object*>& objects, 
+
+glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   Intersect_status& status);
+
 bool is_visible(glm::vec3& point, Light& light,
   vector<Object*>& objects);
+
 glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
   Finish& finish, Pigment* pigment);
+
 Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal);
+
 Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction);
+
+bool same_side(glm::vec3& p,
+               glm::vec3& a,
+               glm::vec3& b,
+               glm::vec3& c);
+
+bool point_within_triangle(glm::vec3& p,
+                           glm::vec3& a,
+                           glm::vec3& b,
+                           glm::vec3& c);
+
 #endif

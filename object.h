@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include <vector>
 
 using namespace std;
 
@@ -30,10 +31,26 @@ class Polyhedron: public Object {
     Polyhedron(Object& obj);
 };
 
+struct VERTEX{
+  glm::vec3 pos;
+  glm::vec3 normal;
+};
+
+struct FACES{
+  vector<int> indices; // triangulised indices
+  vector<glm::vec3> normal;     // nromals of triangulaised faces
+};
+
 class Trianglemesh: public Object {
   public:
     string off_file;
     Trianglemesh(Object& obj);
+    /* reading from file */
+    int num_v;
+    int num_f;
+    vector<VERTEX> vertices;
+    FACES faces;
+    void compute_normal();
 };
 
 class Intersect_status{

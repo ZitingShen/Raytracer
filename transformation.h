@@ -9,7 +9,7 @@ class Transformation{
   public:
   	int id;
     Transformation_type type;
-    glm::vec3 description;
+    glm::vec3 description; // TODO
 };
 
 #endif

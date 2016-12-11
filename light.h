@@ -8,7 +8,7 @@ class Light {
   	int id;
 	  glm::vec3 pos;
 	  glm::vec3 color;
-	  float a, b, c;
+	  float a, b, c; // drop off
 };
 
 #endif

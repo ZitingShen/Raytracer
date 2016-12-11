@@ -17,6 +17,8 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 	vector<Pigment*>& pigments, vector<Finish>& finishes,
 	vector<Transformation>& transformations, vector<Object*>& objects);
 
+bool read_triangle_mesh(Trianglemesh* new_obj);
+
 int main(){
 	Output output;
 	ofstream output_file;
@@ -26,9 +28,9 @@ int main(){
 	vector<Finish> finishes;
 	vector<Transformation> transformations;
 	vector<Object*> objects;
-	
+
 	read_in(output, view, lights, pigments, finishes, transformations, objects);
-	
+
 	output.format = P6;
 	output_file.open(output.file_name);
 	if (output.format == P6) output_file << "P6" << endl;
@@ -147,7 +149,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		cin >> new_object.pigment
 			  >> new_object.finish;
 		cin >> num_trans;
-		for (int j = 0; i < num_trans; j++) {
+		for (int j = 0; j < num_trans; j++) {
 			cin >> next_trans;
 			new_object.trans.push_back(next_trans);
 		}
@@ -177,8 +179,54 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		} else if (type == "trianglemesh") {
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
 			new_obj->type = TRIANGLEMESH;
-			cin >> new_obj->off_file;
-			objects.push_back(new_obj);
-		}
+		  if(!read_triangle_mesh(new_obj))
+        exit(1);
+      objects.push_back(new_obj);
+    }
 	}
+}
+
+bool read_triangle_mesh(Trianglemesh* new_obj){
+  string off;
+  ifstream my_fin;
+  int holder;
+
+  cin >> new_obj->off_file; // get filename
+  my_fin.open(new_obj->off_file);
+  if (!my_fin.is_open()){
+    cerr << "TRIANGLEMESH: CAN NOT OPEN FILE: " << new_obj->off_file <<endl;
+    return false;
+  }
+
+  getline(my_fin, off);
+  if (off.compare("OFF") != 0){
+    cerr << "TRIANGLEMESH: NOT AN OFF FILE: " << new_obj->off_file <<endl;
+    return false;
+  }
+  /* reading attributs */
+  my_fin >> new_obj->num_v;
+  my_fin >> new_obj->num_f;
+  my_fin >> holder; // new_e: obsolete info
+  /* reading vertices */
+  new_obj->vertices.resize(new_obj->num_v);
+  for (int i=0; i<static_cast<int>(new_obj->num_v); i++){
+    for (int j=0; j<3; j++){
+      my_fin >> new_obj->vertices[i].pos[j];
+    }
+  }
+  /* reading faces */
+  for (int i=0; i<static_cast<int>(new_obj->num_f); i++){
+    my_fin >> holder; // the number 3
+    if (holder != 3){
+      cerr << "TRIANGLEMESH: NON TRIANGULAR FACE DETECTED: " << holder << endl;
+      return false;
+    }
+    for (int j=0; j<3;j++){
+      my_fin >> holder;
+      new_obj->faces.indices.push_back(holder);
+    }
+  }
+  my_fin.close();
+  new_obj->compute_normal(); // compute face & vertex normals
+  return true;
 }

@@ -191,7 +191,51 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
+      glm::vec3 intersection;
+      float min_t = -FLT_MAX;
+      float max_t = FLT_MAX;
+      int min_plane = -1;
+      int max_plane = -1;
+      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
+      glm::vec3 normal;
+      for (int j = 0; j < object->num_f; j++){
+        normal = object->faces.normal[j];
 
+        float denominator = glm::dot(ray.direction, normal);
+        float nominator = glm::dot((ray.origin - object->vertices[object->faces.indices[j*3]].pos), normal);
+        if (denominator == 0) {
+          if (nominator < 0) {
+            // No intersection with triangle mesh.
+            min_t = -1;
+            max_t = -1;
+            j = object->num_f;
+            continue;
+          } else { // ignore the face
+            continue;
+          }
+        }
+        float t = nominator / denominator;
+ 
+        if (glm::intersectRayTriangle(ray.origin,
+                                      ray.direction,
+                                      object->vertices[object->faces.indices[j*3]].pos,
+                                      object->vertices[object->faces.indices[j*3+1]].pos,
+                                      object->vertices[object->faces.indices[j*3+2]].pos,
+                                      intersection)){
+          if (point_within_triangle(intersection,
+                                    object->vertices[object->faces.indices[j*3]].pos,
+                                    object->vertices[object->faces.indices[j*3+1]].pos,
+                                    object->vertices[object->faces.indices[j*3+2]].pos)){
+              if(glm::dot(ray.direction, normal)>0){
+                status.type = YES_INTERSECTION;
+                status.object_id = object->id;
+                status.plane_id = 
+                point = intersection;
+              }else{
+
+              }
+        }
+      }
     }
   }
   return point;
@@ -335,4 +379,21 @@ Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction) {
     refraction));
   transmitted_ray.t = FLT_MAX;
   return transmitted_ray;
+}
+
+bool same_side(glm::vec3& p,
+               glm::vec3& a,
+               glm::vec3& b,
+               glm::vec3& c){
+  return (glm::dot(glm::cross(b-a, p-a),
+                   glm::cross(b-a, c-a))>=0);
+}
+
+bool point_within_triangle(glm::vec3& p,
+                           glm::vec3& a,
+                           glm::vec3& b,
+                           glm::vec3& c){
+  return (same_side(p, a, b, c) && 
+          same_side(p, b, a, c) &&
+          same_side(p, c, a, b));
 }

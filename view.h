@@ -1,6 +1,8 @@
 #ifndef VIEW_H
 #define VIEW_H
 
+#include <glm/glm.hpp>
+
 class View {
   public:
     glm::vec3 camera, at, up;

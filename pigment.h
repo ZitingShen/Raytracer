@@ -1,11 +1,13 @@
 #ifndef PIGMENT_H
 #define PIGMENT_H
 
+#include <glm/glm.hpp>
+
 typedef enum _color_type{SOLID, CHECKER} Pigment_type;
 
 class Pigment {
   public:
-  	int id;
+    int id;
     Pigment_type type;
 };
 

@@ -1,7 +1,7 @@
 #ifndef FINISH_H
 #define FINISH_H
 
-class Finish {
+class Finish { // material without colour
 	public:
 		int id;
 		float ambient, diffuse, specular, shininess;
