@@ -215,17 +215,26 @@ bool read_triangle_mesh(Trianglemesh* new_obj){
     }
   }
   /* reading faces */
+  new_obj->faces.resize(new_obj->num_f);
   for (int i=0; i<static_cast<int>(new_obj->num_f); i++){
     my_fin >> holder; // the number 3
     if (holder != 3){
       cerr << "TRIANGLEMESH: NON TRIANGULAR FACE DETECTED: " << holder << endl;
       return false;
     }
-    for (int j=0; j<3;j++){
-      my_fin >> holder;
-      new_obj->faces.indices.push_back(holder);
-    }
+    my_fin >> holder;
+    new_obj->faces[i].A = new_obj->vertices[holder].pos;
+    new_obj->indices.push_back(holder);
+
+    my_fin >> holder;
+    new_obj->faces[i].B = new_obj->vertices[holder].pos;
+    new_obj->indices.push_back(holder);
+
+    my_fin >> holder;
+    new_obj->faces[i].C = new_obj->vertices[holder].pos;
+    new_obj->indices.push_back(holder);
   }
+
   my_fin.close();
   new_obj->compute_normal(); // compute face & vertex normals
   return true;

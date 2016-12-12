@@ -200,49 +200,73 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
       glm::vec3 intersection;
-      float min_t = -FLT_MAX;
+      float min_t = 0;
       float max_t = FLT_MAX;
-      int min_plane = -1;
-      int max_plane = -1;
+      float current_t = 0;
+      int min_plane = -1; // plane id
+      int max_plane = -1; // plane id
       Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
       glm::vec3 normal;
-      for (int j = 0; j < object->num_f; j++){
-        normal = object->faces.normal[j];
-
-        float denominator = glm::dot(ray.direction, normal);
-        float nominator = glm::dot((ray.origin - object->vertices[object->faces.indices[j*3]].pos), normal);
-        if (denominator == 0) {
-          if (nominator < 0) {
-            // No intersection with triangle mesh.
-            min_t = -1;
-            max_t = -1;
-            j = object->num_f;
-            continue;
-          } else { // ignore the face
-            continue;
-          }
-        }
-        float t = nominator / denominator;
- 
+      float dir = 0;
+      for (int j=0; j<object->num_f; j++){
+        normal = object->faces[j].normal;
+        dir = glm::dot(ray.direction, normal);
+        //float denominator = glm::dot(ray.direction, normal);
+        //float nominator = glm::dot(ray.origin - object->faces[j].A, normal);
+        //float t = nominator / denominator; 
         if (glm::intersectRayTriangle(ray.origin,
                                       ray.direction,
-                                      object->vertices[object->faces.indices[j*3]].pos,
-                                      object->vertices[object->faces.indices[j*3+1]].pos,
-                                      object->vertices[object->faces.indices[j*3+2]].pos,
-                                      intersection)){
+                                      object->faces[j].A,
+                                      object->faces[j].B,
+                                      object->faces[j].C,
+                                      intersection)){ // intersect with triangle
           if (point_within_triangle(intersection,
-                                    object->vertices[object->faces.indices[j*3]].pos,
-                                    object->vertices[object->faces.indices[j*3+1]].pos,
-                                    object->vertices[object->faces.indices[j*3+2]].pos)){
-              if(glm::dot(ray.direction, normal)>0){
-                status.type = YES_INTERSECTION;
-                status.object_id = object->id;
-                status.plane_id = 
-                point = intersection;
-              }else{
-
+                                      object->faces[j].A,
+                                      object->faces[j].B,
+                                      object->faces[j].C)){ // within triangle
+            current_t = (intersection - ray.origin).x / ray.direction.x; 
+            if (dir < 0){ // entering
+              if(current_t > min_t){
+                min_t = current_t;
+                min_plane = j;
+                if (min_t > max_t) {
+                  // No intersection with the mesh
+                  min_t = -1;
+                  max_t = -1;
+                  j = object->num_f;
+                  continue; 
+                }
               }
+            }else{ // leaving
+              if (current_t < max_t){
+                max_t = current_t;
+                max_plane = j;
+                if (min_t > max_t) {
+                  // No intersection with the mesh
+                  min_t = -1;
+                  max_t = -1;
+                  j = object->num_f;
+                  continue; 
+                }
+              } 
+            }
+          }
         }
+      }
+      if (min_t > 0 && min_t < ray.t - 0.01) {
+        status.type = YES_INTERSECTION;
+        status.object_id = object->id;
+        status.plane_id = min_plane;
+        point = ray.origin + min_t*ray.direction;
+        ray.t = min_t;
+        status.reverse_normal = false;
+      } else if (max_t > 0 && max_t < ray.t - 0.01) {
+        status.type = YES_INTERSECTION;
+        status.object_id = object->id;
+        status.plane_id = max_plane;
+        point = ray.origin + max_t*ray.direction;
+        ray.t = max_t;
+        status.reverse_normal = true;
       }
     }
   }
@@ -255,7 +279,6 @@ bool is_visible(glm::vec3& point, Light& light,
   light_ray.origin = light.pos;
   light_ray.direction = glm::normalize(point - light.pos);
   light_ray.t = glm::length(point - light.pos);
-    
   for (unsigned int i = 0; i < objects.size(); i++) {
     if (objects[i]->type == SPHERE) {
     Sphere* object = static_cast<Sphere*>(objects[i]);
@@ -330,6 +353,65 @@ bool is_visible(glm::vec3& point, Light& light,
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
       //TODO
+      glm::vec3 intersection;
+      float min_t = 0;
+      float max_t = FLT_MAX;
+      float current_t = 0;
+      int min_plane = -1; // plane id
+      int max_plane = -1; // plane id
+      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
+      glm::vec3 normal;
+      float dir = 0;
+      for (int j=0; j<object->num_f; j++){
+        normal = object->faces[j].normal;
+        dir = glm::dot(light_ray.direction, normal);
+        //float denominator = glm::dot(ray.direction, normal);
+        //float nominator = glm::dot(ray.origin - object->faces[j].A, normal);
+        //float t = nominator / denominator; 
+        if (glm::intersectRayTriangle(light_ray.origin,
+                                      light_ray.direction,
+                                      object->faces[j].A,
+                                      object->faces[j].B,
+                                      object->faces[j].C,
+                                      intersection)){ // intersect with triangle
+          if (point_within_triangle(intersection,
+                                      object->faces[j].A,
+                                      object->faces[j].B,
+                                      object->faces[j].C)){ // within triangle
+            current_t = (intersection - light_ray.origin).x / light_ray.direction.x;
+            if (dir < 0){ // entering
+              if(current_t > min_t){
+                min_t = current_t;
+                min_plane = j;
+                if (min_t > max_t) {
+                  // No intersection with the mesh
+                  min_t = -1;
+                  max_t = -1;
+                  j = object->num_f;
+                  continue;
+                }
+              }
+            }else{ // leaving
+              if (current_t < max_t){
+                max_t = current_t;
+                max_plane = j;
+                if (min_t > max_t) {
+                  // No intersection with the mesh
+                  min_t = -1;
+                  max_t = -1;
+                  j = object->num_f;
+                  continue;
+                }
+              }
+            }
+          }
+        }
+      }
+      if (min_t > 0 && min_t < light_ray.t - 0.01f) {
+        return false;
+      } else if (max_t > 0 && max_t < light_ray.t - 0.01f) {
+        return false;
+      }
     }
   }
   return true;

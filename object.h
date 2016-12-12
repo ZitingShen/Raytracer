@@ -36,10 +36,12 @@ struct VERTEX{
   glm::vec3 normal;
 };
 
-struct FACES{
-  vector<int> indices; // triangulised indices
-  vector<glm::vec3> normal;     // nromals of triangulaised faces
-};
+struct FACE{
+  glm::vec3 A;
+  glm::vec3 B;
+  glm::vec3 C;
+  glm::vec3 normal;
+}
 
 class Trianglemesh: public Object {
   public:
@@ -49,7 +51,8 @@ class Trianglemesh: public Object {
     int num_v;
     int num_f;
     vector<VERTEX> vertices;
-    FACES faces;
+    vector<FACE> faces;
+    vector<int> indices; // for computing vertex normal
     void compute_normal();
 };
 
