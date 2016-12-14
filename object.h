@@ -14,7 +14,7 @@ typedef enum _intersect_type{NO_INTERSECTION, YES_INTERSECTION} Intersect_type;
 class Object {
   public:
     int id, pigment, finish;
-    vector<int> trans;
+    glm::mat4 trans = glm::mat4();
     Object_type type;
 };
 
@@ -31,17 +31,20 @@ class Polyhedron: public Object {
     Polyhedron(Object& obj);
 };
 
-struct VERTEX{
-  glm::vec3 pos;
-  glm::vec3 normal;
+class VERTEX{
+  public:
+    glm::vec3 pos;
+    glm::vec3 normal;
+    vector<int> face_indices;
 };
 
-struct FACE{
-  glm::vec3 A;
-  glm::vec3 B;
-  glm::vec3 C;
-  glm::vec3 normal;
-}
+class FACE{
+  public:
+    glm::vec3 A;
+    glm::vec3 B;
+    glm::vec3 C;
+    glm::vec3 normal;
+};
 
 class Trianglemesh: public Object {
   public:
@@ -52,7 +55,6 @@ class Trianglemesh: public Object {
     int num_f;
     vector<VERTEX> vertices;
     vector<FACE> faces;
-    vector<int> indices; // for computing vertex normal
     void compute_normal();
 };
 

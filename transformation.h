@@ -9,7 +9,8 @@ class Transformation{
   public:
   	int id;
     Transformation_type type;
-    glm::vec3 description; // TODO
+    glm::mat4 description;
+    Transformation(Transformation_type type, float x, float y, float z, int id);
 };
 
 #endif

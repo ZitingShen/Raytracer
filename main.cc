@@ -129,17 +129,16 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 
 	cin >> num_transformations;
 	for (int i = 0; i < num_transformations; i++) {
-		Transformation new_transformation;
 		cin >> type;
 		if (type == "scale") {
-			new_transformation.type = SCALE;
+			cin >> x >> y >> z;
+			Transformation new_transformation(SCALE, x, y, z, i);
+			transformations.push_back(new_transformation);
 		} else if (type == "translate") {
-			new_transformation.type = TRANSLATE;
+			cin >> x >> y >> z;
+			Transformation new_transformation(TRANSLATE, x, y, z, i);
+			transformations.push_back(new_transformation);
 		}
-		cin >> x >> y >> z;
-		new_transformation.description = glm::vec3(x, y, z);
-		new_transformation.id = i;
-		transformations.push_back(new_transformation);
 	}
 
 	cin >> num_objects;
@@ -151,7 +150,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		cin >> num_trans;
 		for (int j = 0; j < num_trans; j++) {
 			cin >> next_trans;
-			new_object.trans.push_back(next_trans);
+			new_object.trans *= transformations[next_trans].description;
 		}
 		cin >> type;
 		if (type == "sphere") {
@@ -179,8 +178,10 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		} else if (type == "trianglemesh") {
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
 			new_obj->type = TRIANGLEMESH;
-		  if(!read_triangle_mesh(new_obj))
+		  if(!read_triangle_mesh(new_obj)){
+		  	cerr << "Error when reading trianglemesh" << endl; 
         exit(1);
+		  }
       objects.push_back(new_obj);
     }
 	}
@@ -209,30 +210,30 @@ bool read_triangle_mesh(Trianglemesh* new_obj){
   my_fin >> holder; // new_e: obsolete info
   /* reading vertices */
   new_obj->vertices.resize(new_obj->num_v);
-  for (int i=0; i<static_cast<int>(new_obj->num_v); i++){
-    for (int j=0; j<3; j++){
+  for (int i = 0; i< new_obj->num_v; i++){
+    for (int j = 0; j < 3; j++){
       my_fin >> new_obj->vertices[i].pos[j];
     }
   }
   /* reading faces */
   new_obj->faces.resize(new_obj->num_f);
-  for (int i=0; i<static_cast<int>(new_obj->num_f); i++){
+  for (int i = 0; i< new_obj->num_f; i++){
     my_fin >> holder; // the number 3
     if (holder != 3){
       cerr << "TRIANGLEMESH: NON TRIANGULAR FACE DETECTED: " << holder << endl;
       return false;
     }
     my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
     new_obj->faces[i].A = new_obj->vertices[holder].pos;
-    new_obj->indices.push_back(holder);
 
     my_fin >> holder;
+   new_obj->vertices[holder].face_indices.push_back(i);
     new_obj->faces[i].B = new_obj->vertices[holder].pos;
-    new_obj->indices.push_back(holder);
 
     my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
     new_obj->faces[i].C = new_obj->vertices[holder].pos;
-    new_obj->indices.push_back(holder);
   }
 
   my_fin.close();

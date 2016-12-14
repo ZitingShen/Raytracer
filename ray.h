@@ -40,6 +40,8 @@ void write_pixel(ofstream& output_file, glm::vec3& color,
 glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   Intersect_status& status);
 
+Ray transform_ray(Ray& ray, glm::mat4 trans);
+
 bool is_visible(glm::vec3& point, Light& light,
   vector<Object*>& objects);
 

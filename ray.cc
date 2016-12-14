@@ -96,38 +96,45 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   status.type = NO_INTERSECTION;
   glm::vec3 point(0, 0, 0);
   for (unsigned int i = 0; i < objects.size(); i++) {
+    Ray transformed_ray = transform_ray(ray, objects[i]->trans);
     if (objects[i]->type == SPHERE) {
       Sphere* object = static_cast<Sphere*>(objects[i]);
-      glm::vec3 co = ray.origin - object->origin;
+      glm::vec3 co = transformed_ray.origin - object->origin;
       float co_length = glm::length(co);
       float a = 1;
-      float b = 2*glm::dot(co, ray.direction);
+      float b = 2*glm::dot(co, transformed_ray.direction);
       float c = co_length*co_length 
         - object->radius*object->radius;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
-        float t = -b/(2*a);
+        float transformed_t = -b/(2*a);
+        float t = transformed_t*glm::length(transformed_ray.direction);
         if (t >= 0 && t < ray.t-0.01) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
-          point = ray.origin + t*ray.direction;
+          point = transformed_ray.origin 
+            + transformed_t*transformed_ray.direction;
           ray.t = t;
         }
       } else if (delta > 0) {
         float base = -b/(2*a);
         float sqrt = glm::sqrt(delta)/(2*a);
-        float t1 = base-sqrt;
-        float t2 = base+sqrt;
+        float transformed_t1 = base-sqrt;
+        float transformed_t2 = base+sqrt;
+        float t1 = transformed_t1*glm::length(transformed_ray.direction);
+        float t2 = transformed_t2*glm::length(transformed_ray.direction);
         if (t1 >= 0 && t1 < ray.t-0.01) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
-          point = ray.origin + t1*ray.direction;
+          point = transformed_ray.origin 
+            + transformed_t1*transformed_ray.direction;
           ray.t = t1;
           status.reverse_normal = false;
         } else if (t2 >= 0 && t2 < ray.t-0.01) {
           status.type = YES_INTERSECTION;
           status.object_id = object->id;
-          point = ray.origin + t2*ray.direction;
+          point = transformed_ray.origin 
+            + transformed_t2*transformed_ray.direction;
           ray.t = t2;
           status.reverse_normal = true;
         }
@@ -142,8 +149,8 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
         glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
                                                     object->planes[j].y,
                                                     object->planes[j].z));
-        float denominator = glm::dot(ray.direction, normal);
-        float nominator = -(object->planes[j].w + glm::dot(ray.origin, normal));
+        float denominator = glm::dot(transformed_ray.direction, normal);
+        float nominator = -(object->planes[j].w + glm::dot(transformed_ray.origin, normal));
         if (denominator == 0) {
           if (nominator < 0) {
             // No intersection with the polygon.
@@ -182,95 +189,81 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
           }
         }
       }
-      if (min_t > 0 && min_t < ray.t - 0.01) {
+      float real_min_t = min_t*glm::length(transformed_ray.direction);
+      float real_max_t = max_t*glm::length(transformed_ray.direction);
+      if (real_min_t > 0 && real_min_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = min_plane;
-        point = ray.origin + min_t*ray.direction;
-        ray.t = min_t;
+        point = transformed_ray.origin + min_t*transformed_ray.direction;
+        ray.t = real_min_t;
         status.reverse_normal = false;
-      } else if (max_t > 0 && max_t < ray.t - 0.01) {
+      } else if (real_max_t > 0 && real_max_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = max_plane;
-        point = ray.origin + max_t*ray.direction;
-        ray.t = max_t;
+        point = transformed_ray.origin + max_t*transformed_ray.direction;
+        ray.t = real_max_t;
         status.reverse_normal = true;
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
-      //TODO
-      glm::vec3 intersection;
+      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
       float min_t = 0;
       float max_t = FLT_MAX;
-      float current_t = 0;
+      float t = 0;
       int min_plane = -1; // plane id
       int max_plane = -1; // plane id
-      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
-      glm::vec3 normal;
       float dir = 0;
       for (int j=0; j<object->num_f; j++){
-        normal = object->faces[j].normal;
-        dir = glm::dot(ray.direction, normal);
-        //float denominator = glm::dot(ray.direction, normal);
-        //float nominator = glm::dot(ray.origin - object->faces[j].A, normal);
-        //float t = nominator / denominator; 
-        if (glm::intersectRayTriangle(ray.origin,
-                                      ray.direction,
+        if (glm::intersectRayTriangle(transformed_ray.origin,
+                                      transformed_ray.direction,
                                       object->faces[j].A,
                                       object->faces[j].B,
                                       object->faces[j].C,
-                                      intersection)){ // intersect with triangle
-          if (point_within_triangle(intersection,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C)){ // within triangle
-            current_t = (intersection - ray.origin).x / ray.direction.x; 
-            if (dir < 0){ // entering
-              if(current_t > min_t){
-                min_t = current_t;
-                min_plane = j;
-                if (min_t > max_t) {
-                  // No intersection with the mesh
-                  min_t = -1;
-                  max_t = -1;
-                  j = object->num_f;
-                  continue; 
-                }
-              }
-            }else{ // leaving
-              if (current_t < max_t){
-                max_t = current_t;
-                max_plane = j;
-                if (min_t > max_t) {
-                  // No intersection with the mesh
-                  min_t = -1;
-                  max_t = -1;
-                  j = object->num_f;
-                  continue; 
-                }
-              } 
+                                      point)){ // intersect with triangle
+          t = glm::length(point - transformed_ray.origin);
+          dir = glm::dot(transformed_ray.direction, object->faces[j].normal);
+          if (dir < 0){ // entering
+            if(t > min_t){
+              min_t = t;
+              min_plane = j;
             }
+          }else{ // leaving
+            if (t > 0 && t < max_t){
+              max_t = t;
+              max_plane = j;
+            } 
           }
         }
       }
-      if (min_t > 0 && min_t < ray.t - 0.01) {
+      float real_min_t = min_t*glm::length(transformed_ray.direction);
+      float real_max_t = max_t*glm::length(transformed_ray.direction);
+      if (real_min_t > 0 && real_min_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = min_plane;
-        point = ray.origin + min_t*ray.direction;
-        ray.t = min_t;
+        point = transformed_ray.origin + min_t*transformed_ray.direction;
+        ray.t = real_min_t;
         status.reverse_normal = false;
-      } else if (max_t > 0 && max_t < ray.t - 0.01) {
+      } else if (real_max_t > 0 && real_max_t < ray.t - 0.01) {
         status.type = YES_INTERSECTION;
         status.object_id = object->id;
         status.plane_id = max_plane;
-        point = ray.origin + max_t*ray.direction;
-        ray.t = max_t;
+        point = transformed_ray.origin + max_t*transformed_ray.direction;
+        ray.t = real_max_t;
         status.reverse_normal = true;
       }
     }
   }
   return point;
+}
+
+Ray transform_ray(Ray& ray, glm::mat4 trans) {
+  Ray transformed_ray;
+  trans = glm::inverse(trans);
+  transformed_ray.origin = glm::vec3(glm::vec4(ray.origin, 1.0)*trans);
+  transformed_ray.direction = glm::vec3(glm::vec4(ray.direction, 1.0)*trans);
+  return transformed_ray;
 }
 
 bool is_visible(glm::vec3& point, Light& light,
@@ -280,23 +273,24 @@ bool is_visible(glm::vec3& point, Light& light,
   light_ray.direction = glm::normalize(point - light.pos);
   light_ray.t = glm::length(point - light.pos);
   for (unsigned int i = 0; i < objects.size(); i++) {
+    Ray transformed_ray = transform_ray(light_ray, objects[i]->trans);
     if (objects[i]->type == SPHERE) {
     Sphere* object = static_cast<Sphere*>(objects[i]);
-      glm::vec3 co = light_ray.origin - object->origin;
+      glm::vec3 co = transformed_ray.origin - object->origin;
       float co_length = glm::length(co);
       float a = 1;
-      float b = 2*glm::dot(co, light_ray.direction);
+      float b = 2*glm::dot(co, transformed_ray.direction);
       float c = co_length*co_length 
         - object->radius*object->radius;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
-        float t = -b/(2*a);
+        float t = -b/(2*a)*glm::length(transformed_ray.direction);
         if (t >= 0 && t < light_ray.t-0.01) return false;
       } else if (delta > 0) {
         float base = -b/(2*a);
         float sqrt = glm::sqrt(delta)/(2.0f*a);
-        float t1 = base-sqrt;
-        float t2 = base+sqrt;
+        float t1 = (base-sqrt)*glm::length(transformed_ray.direction);
+        float t2 = (base+sqrt)*glm::length(transformed_ray.direction);
         if (t1 >= 0 && t1 < light_ray.t-0.01) return false;
         if (t2 >= 0 && t2 < light_ray.t-0.01) return false;
       }
@@ -308,8 +302,8 @@ bool is_visible(glm::vec3& point, Light& light,
         glm::vec3 normal = glm::normalize(glm::vec3(object->planes[j].x, 
                                                     object->planes[j].y,
                                                     object->planes[j].z));
-        float denominator = glm::dot(light_ray.direction, normal);
-        float nominator = -(object->planes[j].w + glm::dot(light_ray.origin, normal));
+        float denominator = glm::dot(transformed_ray.direction, normal);
+        float nominator = -(object->planes[j].w + glm::dot(transformed_ray.origin, normal));
         if (denominator == 0) {
           if (nominator < 0) {
             // No intersection with the polygon.
@@ -346,71 +340,35 @@ bool is_visible(glm::vec3& point, Light& light,
           }
         }
       }
+      min_t *= glm::length(transformed_ray.direction);
+      max_t *= glm::length(transformed_ray.direction);
       if (min_t > 0 && min_t < light_ray.t - 0.01f) {
         return false;
       } else if (max_t > 0 && max_t < light_ray.t - 0.01f) {
         return false;
       }
     } else if (objects[i]->type == TRIANGLEMESH) {
-      //TODO
-      glm::vec3 intersection;
+      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
       float min_t = 0;
       float max_t = FLT_MAX;
-      float current_t = 0;
-      int min_plane = -1; // plane id
-      int max_plane = -1; // plane id
-      Trianglemesh* object = static_cast<Trianglemesh*>(objects[i]);
-      glm::vec3 normal;
+      float t = 0;
       float dir = 0;
       for (int j=0; j<object->num_f; j++){
-        normal = object->faces[j].normal;
-        dir = glm::dot(light_ray.direction, normal);
-        //float denominator = glm::dot(ray.direction, normal);
-        //float nominator = glm::dot(ray.origin - object->faces[j].A, normal);
-        //float t = nominator / denominator; 
-        if (glm::intersectRayTriangle(light_ray.origin,
-                                      light_ray.direction,
+        if (glm::intersectRayTriangle(transformed_ray.origin,
+                                      transformed_ray.direction,
                                       object->faces[j].A,
                                       object->faces[j].B,
                                       object->faces[j].C,
-                                      intersection)){ // intersect with triangle
-          if (point_within_triangle(intersection,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C)){ // within triangle
-            current_t = (intersection - light_ray.origin).x / light_ray.direction.x;
-            if (dir < 0){ // entering
-              if(current_t > min_t){
-                min_t = current_t;
-                min_plane = j;
-                if (min_t > max_t) {
-                  // No intersection with the mesh
-                  min_t = -1;
-                  max_t = -1;
-                  j = object->num_f;
-                  continue;
-                }
-              }
-            }else{ // leaving
-              if (current_t < max_t){
-                max_t = current_t;
-                max_plane = j;
-                if (min_t > max_t) {
-                  // No intersection with the mesh
-                  min_t = -1;
-                  max_t = -1;
-                  j = object->num_f;
-                  continue;
-                }
-              }
-            }
+                                      point)){ // intersect with triangle
+          t = glm::length(point - transformed_ray.origin)
+            *glm::length(transformed_ray.direction);
+          dir = glm::dot(transformed_ray.direction, object->faces[j].normal);
+          if (dir < 0){ // entering
+            if (t > min_t && t < light_ray.t) return false;
+          } else{ // leaving
+            if ((t > 0 && t < max_t) && t < light_ray.t) return false;
           }
         }
-      }
-      if (min_t > 0 && min_t < light_ray.t - 0.01f) {
-        return false;
-      } else if (max_t > 0 && max_t < light_ray.t - 0.01f) {
-        return false;
       }
     }
   }
@@ -469,21 +427,4 @@ Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction) {
     refraction));
   transmitted_ray.t = FLT_MAX;
   return transmitted_ray;
-}
-
-bool same_side(glm::vec3& p,
-               glm::vec3& a,
-               glm::vec3& b,
-               glm::vec3& c){
-  return (glm::dot(glm::cross(b-a, p-a),
-                   glm::cross(b-a, c-a))>=0);
-}
-
-bool point_within_triangle(glm::vec3& p,
-                           glm::vec3& a,
-                           glm::vec3& b,
-                           glm::vec3& c){
-  return (same_side(p, a, b, c) && 
-          same_side(p, b, a, c) &&
-          same_side(p, c, a, b));
 }

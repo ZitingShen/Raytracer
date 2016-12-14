@@ -25,31 +25,19 @@ void Trianglemesh::compute_normal(){
   glm::vec3 face_normal;
   // Assuming all vertices are given in counter-clock order
   // Computing face normals
-  for (int count=0; count<this->num_f; count++){
-    face_normal = glm::cross(this->faces[count].C - this->faces[count].B,
-                             this->faces[count].A - this->faces[count].B);
-    this->faces[count].normal = glm::normalize(face_normal);
+  for (int i = 0; i < num_f; i++){
+    face_normal = glm::cross(faces[i].C - faces[i].B,
+                             faces[i].A - faces[i].B);
+    faces[i].normal = glm::normalize(face_normal);
   }
   // Computing vertex normals
-  vector<vector<int> > faces_per_vertex(this->num_v, vector<int>());
-  glm::vec3 normal;
-  int count = 0;
-  for (int i=0; i<this->num_f; i++){  // which face we are looking at
-    for (int j=0; j<3; j++){  // all vertices in this face
-      faces_per_vertex[this->indices[count]].push_back(i);
-      count++;
+  for (unsigned int i = 0; i< num_v; i++){
+    vertices[i].normal = glm::vec3(0, 0, 0);
+    for (unsigned int j = 0; j < vertices[i].face_indices.size(); j++){
+      vertices[i].normal += faces[j].normal;
     }
-  }
-  count = 0;
-  for (int i=0; i<(int)this->num_v; i++){
-    normal = glm::vec3(0, 0, 0);
-    for (int j=0; j<(int)faces_per_vertex[i].size(); j++){
-      normal += this->faces[faces_per_vertex[i][j]].normal;
-    }
-    normal = glm::normalize(normal * (1.0f / (float)faces_per_vertex[i].size()));
-    this->vertices[i].normal[0] = normal[0];
-    this->vertices[i].normal[1] = normal[1];
-    this->vertices[i].normal[2] = normal[2];
+    vertices[i].normal = glm::normalize(vertices[i].normal 
+      * (1.0f / vertices[i].face_indices.size()));
   }
 }
 
