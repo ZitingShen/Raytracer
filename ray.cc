@@ -212,9 +212,9 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       for (int j=0; j<object->num_f; j++){
         if (glm::intersectRayTriangle(ray.origin,
                                       ray.direction,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C,
+                                      object->vertices[object->faces[j].A].pos,
+                                      object->vertices[object->faces[j].B].pos,
+                                      object->vertices[object->faces[j].C].pos,
                                       point)){ // intersect with triangle
           t = glm::length(point - ray.origin);
           dir = glm::dot(ray.direction, object->faces[j].normal);
@@ -342,9 +342,9 @@ bool is_visible(glm::vec3& point, Light& light,
       for (int j=0; j<object->num_f; j++){
         if (glm::intersectRayTriangle(light_ray.origin,
                                       light_ray.direction,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C,
+                                      object->vertices[object->faces[j].A].pos,
+                                      object->vertices[object->faces[j].B].pos,
+                                      object->vertices[object->faces[j].C].pos,
                                       point)){ // intersect with triangle
           t = glm::length(point - light_ray.origin);
           dir = glm::dot(light_ray.direction, object->faces[j].normal);
@@ -392,7 +392,8 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
        + glm::floor(point.z/checker->size)) % 2 == 0)
       color = checker->color1;
     else color = checker->color2;
-  } else if (pigment->type == IMAGE) {
+  } else 
+    /* if (pigment->type == IMAGE) */ {
     
   }
   return (ambient_light + diffuse_light)*color + specular_light;
