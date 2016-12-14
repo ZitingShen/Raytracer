@@ -11,7 +11,7 @@
 
 using namespace std;
 
-typedef enum _object_type{SPHERE, POLYHEDRON, TRIANGLEMESH, CONE} Object_type;
+typedef enum _object_type{SPHERE, POLYHEDRON, TRIANGLEMESH, CYLINDER, CONE} Object_type;
 typedef enum _intersect_type{NO_INTERSECTION, YES_INTERSECTION} Intersect_type;
 
 class Object {
@@ -80,7 +80,8 @@ class Cylinder : public Object{
     glm::vec3 origin_A;
     glm::vec3 origin_B;
     float radius;
-    float height;
+    float Pa;
+    float Va;
     void transform(vector<Transformation>& transformations);
 };
 

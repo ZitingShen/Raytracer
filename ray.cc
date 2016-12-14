@@ -246,6 +246,8 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
         ray.t = max_t;
         status.reverse_normal = true;
       }
+    } else if (objects[i]->type == CYLINDER){
+      //TODO
     }
   }
   return point;
@@ -355,6 +357,8 @@ bool is_visible(glm::vec3& point, Light& light,
           }
         }
       }
+    } else if (objects[i]->type == CYLINDER) {
+      //TODO
     }
   }
   return true;

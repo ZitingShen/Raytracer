@@ -35,15 +35,16 @@ Trianglemesh::~Trianglemesh(){
   this->vertices.clear();
 }
 
+Cylinder::Cylinder(Object& obj){
+	id = obj.id;
+	pigment = obj.pigment;
+	finish = obj.finish;
+	trans = obj.trans;
+}
 
-//VERTEX::~VERTEX(){
-//  this->face_indices.clear();
-//}
+Cylinder::~Cylinder(){
 
-//FACE::~FACE(){
-//  * Do nothing */
-//}
-
+}
 
 Cone::Cone(Object& obj) {
 	id = obj.id;
@@ -99,6 +100,16 @@ void Trianglemesh::transform(vector<Transformation>& transformations) {
 	}
 }
 
+void Cylinder::transform(vector<Transformation>& transformations){
+  for (unsigned int i=0; i<trans.size(); i++){
+    if (transformations[trans[i]].type == SCALE){
+      //TODO
+    }else if (transformations[trans[i]].type == TRANSLATE){
+      origin_A += transformations[trans[i]].description;
+      origin_B += transformations[trans[i]].description;
+    }
+  }
+}
 
 void Cone::transform(vector<Transformation>& transformations) {
 	for (unsigned int i = 0; i < trans.size(); i++) {
@@ -157,8 +168,6 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
 																		poly->planes[plane_id].y,
 																		poly->planes[plane_id].z));
 	} else if (object->type == TRIANGLEMESH) {
-    //TODO will need to return interpolated vertex normal for phong
-    //     currently returning face normal (flat-shading)
     Trianglemesh* tria = static_cast<Trianglemesh*>(object);
     float AP = glm::distance(tria->vertices[tria->faces[plane_id].A].pos, point);
     float BP = glm::distance(tria->vertices[tria->faces[plane_id].B].pos, point);
@@ -207,7 +216,7 @@ void Trianglemesh::generate_off(){
     }
     off << endl;
   }
-  
+
   return;
 }
 
