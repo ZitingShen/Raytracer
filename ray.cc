@@ -392,6 +392,8 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
        + glm::floor(point.z/checker->size)) % 2 == 0)
       color = checker->color1;
     else color = checker->color2;
+  } else if (pigment->type == IMAGE) {
+    
   }
   return (ambient_light + diffuse_light)*color + specular_light;
 }

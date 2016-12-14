@@ -110,6 +110,14 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->type = CHECKER;
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
+		} else if (type == "image") {
+			Image_pigment* new_pigment = new Image_pigment();
+			string image_file;
+			cin >> image_file;
+			read_ppm(c_str(image_file), &Image_pigment->img);
+			new_pigment->type = IMAGE;
+			new_pigment->id = i;
+			pigments.push_back(new_pigment);
 		}
 	}
 

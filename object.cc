@@ -39,7 +39,9 @@ void Polyhedron::transform(vector<Transformation>& transformations) {
 				planes[j].w += glm::dot(transformations[trans[i]].description, 
 					glm::normalize(glm::vec3(planes[j])));
 			} else if (transformations[trans[i]].type == SCALE) {
-				// TODO
+				planes[j].x *= transformations[trans[i]].description.x;
+				planes[j].y *= transformations[trans[i]].description.y;
+				planes[j].z *= transformations[trans[i]].description.z;
 			}
 		}
 	}
@@ -47,13 +49,13 @@ void Polyhedron::transform(vector<Transformation>& transformations) {
 
 void Trianglemesh::transform(vector<Transformation>& transformations) {
 	for (unsigned int i = 0; i < trans.size(); i++) {
-		for (unsigned int j = 0; j < faces.size(); j++) {
+		for (unsigned int j = 0; j < vertices.size(); j++) {
 			if (transformations[trans[i]].type == TRANSLATE) {
-				faces[j].A += transformations[trans[i]].description;
-				faces[j].B += transformations[trans[i]].description;
-				faces[j].C += transformations[trans[i]].description;
+				vertices[j] += transformations[trans[i]].description;
 			} else if (transformations[trans[i]].type == SCALE) {
-				// TODO
+				vertices[j] -= center;
+				vertices[j] *= transformations[trans[i]].description;
+				vertices[j] += center;
 			}
 		}
 	}
