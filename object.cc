@@ -1,4 +1,5 @@
 #include "object.h"
+#include <iostream>
 
 Sphere::Sphere(Object& obj) {
 	id = obj.id;
@@ -26,7 +27,7 @@ void Sphere::transform(vector<Transformation>& transformations) {
 		if (transformations[trans[i]].type == SCALE) {
 			radius *= transformations[trans[i]].description;
 		} else if (transformations[trans[i]].type == TRANSLATE) {
-			origin *= transformations[trans[i]].description;
+			origin += transformations[trans[i]].description;
 		}
 	}
 }
@@ -38,7 +39,9 @@ void Polyhedron::transform(vector<Transformation>& transformations) {
 				planes[j].w += glm::dot(transformations[trans[i]].description, 
 					glm::normalize(glm::vec3(planes[j])));
 			} else if (transformations[trans[i]].type == SCALE) {
-				// TODO
+				planes[j].x *= transformations[trans[i]].description.x;
+				planes[j].y *= transformations[trans[i]].description.y;
+				planes[j].z *= transformations[trans[i]].description.z;
 			}
 		}
 	}
@@ -46,13 +49,13 @@ void Polyhedron::transform(vector<Transformation>& transformations) {
 
 void Trianglemesh::transform(vector<Transformation>& transformations) {
 	for (unsigned int i = 0; i < trans.size(); i++) {
-		for (unsigned int j = 0; j < faces.size(); j++) {
+		for (unsigned int j = 0; j < vertices.size(); j++) {
 			if (transformations[trans[i]].type == TRANSLATE) {
-				vertices[faces[j].A].pos += transformations[trans[i]].description;
-				vertices[faces[j].B].pos += transformations[trans[i]].description;
-				vertices[faces[j].C].pos += transformations[trans[i]].description;
+				vertices[j] += transformations[trans[i]].description;
 			} else if (transformations[trans[i]].type == SCALE) {
-				// TODO
+				vertices[j] -= center;
+				vertices[j] *= transformations[trans[i]].description;
+				vertices[j] += center;
 			}
 		}
 	}

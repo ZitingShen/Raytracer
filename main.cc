@@ -109,6 +109,14 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->type = CHECKER;
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
+		} else if (type == "image") {
+			Image_pigment* new_pigment = new Image_pigment();
+			string image_file;
+			cin >> image_file;
+			read_ppm(c_str(image_file), &Image_pigment->img);
+			new_pigment->type = IMAGE;
+			new_pigment->id = i;
+			pigments.push_back(new_pigment);
 		}
 	}
 
@@ -160,8 +168,6 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			cin >> x;
 			new_obj->radius = glm::vec3(x, x, x);
 			new_obj->transform(transformations);
-			cout << glm::to_string(new_obj->origin) << endl;
-			cout << glm::to_string(new_obj->radius) << endl;
 			objects.push_back(new_obj);
 		} else if (type == "plane"){
 			Polyhedron* new_obj = new Polyhedron(new_object);
