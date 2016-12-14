@@ -12,7 +12,7 @@ test1.ppm
 solid        1  0  0
 solid        0  1  0
 solid        0  0  1
-image		 testfiles/fire.ppm
+image		 testfiles/balmoral.ppm
 2
 0.4  0.6  0.0  1    0  0  0
 0.4  0.6  0.7  500  .5  .5  1.5
