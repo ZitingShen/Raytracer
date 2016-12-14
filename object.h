@@ -48,10 +48,8 @@ struct VERTEX{
     vector<int> face_indices;
 };
 
-//class FACE{
-//  public:
-//    ~FACE();
-struct FACE{
+class FACE{
+  public:
     int A; // index in vertices
     int B; // index in vertices
     int C; // index in vertices

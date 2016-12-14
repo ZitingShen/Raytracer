@@ -8,10 +8,11 @@ test1.ppm
 0     0   0    1  1  1   1  0  0
 10  100  10    1  1  1   1  0  0
 100 100 100    1  1  1   1  0  0
-3
+4
 solid        1  0  0
 solid        0  1  0
 solid        0  0  1
+image		 testfiles/fire.ppm
 2
 0.4  0.6  0.0  1    0  0  0
 0.4  0.6  0.7  500  .5  .5  1.5
@@ -21,4 +22,4 @@ scale 1 2 3
 1 0 1 0 sphere   1   0  -8    2
 0 1 0 sphere   3   5 -10    3
 2 1 0 sphere  10  -5 -25   10
-2 1 0 sphere -10   0 -25   10
+3 1 0 sphere -10   0 -25   10
