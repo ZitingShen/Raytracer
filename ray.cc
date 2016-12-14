@@ -106,8 +106,7 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       float co_length = glm::length(co_times_inverse_radius);
       float a = 1;
       float b = 2*glm::dot(co_times_inverse_radius, ray.direction);
-      float c = co_length*co_length;
-        - object->radius*object->radius;
+      float c = co_length*co_length - 1;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
         float t = -b/(2*a);
@@ -268,8 +267,7 @@ bool is_visible(glm::vec3& point, Light& light,
       float co_length = glm::length(co_times_inverse_radius);
       float a = 1;
       float b = 2*glm::dot(co_times_inverse_radius, light_ray.direction);
-      float c = co_length*co_length;
-        - object->radius*object->radius;
+      float c = co_length*co_length - 1;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
         float t = -b/(2*a);
