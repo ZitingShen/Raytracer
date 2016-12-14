@@ -42,15 +42,15 @@ int main(){
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
 			glm::vec3 color(0, 0, 0);
-			for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
-				for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
+			//for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
+			//	for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
 					Ray ray;
-					compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
-			//		compute_ray(view, i, j, ray);
+			//		compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
+					compute_ray(view, i, j, ray);
 					color += trace(ray, 0, objects, lights, finishes, pigments);
-				}
-			}
-			color = color*(1/9.0f);
+			//	}
+			//}
+			//color = color*(1/9.0f);
 			write_pixel(output_file, color, output.format);
 		}
 	}
@@ -150,7 +150,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		cin >> num_trans;
 		for (int j = 0; j < num_trans; j++) {
 			cin >> next_trans;
-			new_object.trans *= transformations[next_trans].description;
+			new_object.trans.push_back(next_trans);
 		}
 		cin >> type;
 		if (type == "sphere") {
@@ -158,13 +158,16 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_obj->type = SPHERE;
 			cin >> x >> y >> z;
 			new_obj->origin = glm::vec3(x, y, z);
-			cin >> new_obj->radius;
+			cin >> x;
+			new_obj->radius = glm::vec3(x, x, x);
+			new_obj->transform(transformations);
 			objects.push_back(new_obj);
 		} else if (type == "plane"){
 			Polyhedron* new_obj = new Polyhedron(new_object);
 			new_obj->type = POLYHEDRON;
 			cin >> x >> y >> z >> w;
 			new_obj->planes.push_back(glm::vec4(x, y, z, w));
+			new_obj->transform(transformations);
 			objects.push_back(new_obj);
 		} else if (type == "polyhedron") {
 			Polyhedron* new_obj = new Polyhedron(new_object);
@@ -174,6 +177,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 				cin >> x >> y >> z >> w;
 				new_obj->planes.push_back(glm::vec4(x, y, z, w));
 			}
+			new_obj->transform(transformations);
 			objects.push_back(new_obj);
 		} else if (type == "trianglemesh") {
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
@@ -182,6 +186,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 		  	cerr << "Error when reading trianglemesh" << endl; 
         exit(1);
 		  }
+		  new_obj->transform(transformations);
       objects.push_back(new_obj);
     }
 	}

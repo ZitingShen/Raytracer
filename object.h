@@ -5,6 +5,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <vector>
+#include "transformation.h"
 
 using namespace std;
 
@@ -14,21 +15,24 @@ typedef enum _intersect_type{NO_INTERSECTION, YES_INTERSECTION} Intersect_type;
 class Object {
   public:
     int id, pigment, finish;
-    glm::mat4 trans = glm::mat4();
+    vector<int> trans;
     Object_type type;
+    void transform(vector<Transformation>& transformations);
 };
 
 class Sphere: public Object{
   public:
     glm::vec3 origin;
-    float radius;
+    glm::vec3 radius;
     Sphere(Object& obj);
+    void transform(vector<Transformation>& transformations);
 };
 
 class Polyhedron: public Object {
   public:
     vector<glm::vec4> planes;
     Polyhedron(Object& obj);
+    void transform(vector<Transformation>& transformations);
 };
 
 class VERTEX{
@@ -50,6 +54,7 @@ class Trianglemesh: public Object {
   public:
     string off_file;
     Trianglemesh(Object& obj);
+    void transform(vector<Transformation>& transformations);
     /* reading from file */
     int num_v;
     int num_f;

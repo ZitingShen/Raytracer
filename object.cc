@@ -21,6 +21,43 @@ Trianglemesh::Trianglemesh(Object& obj) {
 	trans = obj.trans;
 }
 
+void Sphere::transform(vector<Transformation>& transformations) {
+	for (int i = 0; i < trans.size(); i++) {
+		if (transformations[trans[i]].type == SCALE) {
+			radius *= transformations[trans[i]].description;
+		} else if (transformations[trans[i]].type == TRANSLATE) {
+			origin *= transformations[trans[i]].description;
+		}
+	}
+}
+
+void Polyhedron::transform(vector<Transformation>& transformations) {
+	for (int i = 0; i < trans.size(); i++) {
+		for (int j = 0; j < planes.size(); j++) {
+			if (transformations[trans[i]].type == TRANSLATE) {
+				planes[j].w += glm::dot(transformations[trans[i]].description, 
+					glm::normalize(glm::vec3(planes[j])));
+			} else if (transformations[trans[i]].type == SCALE) {
+				// TODO
+			}
+		}
+	}
+}
+
+void Trianglemesh::transform(vector<Transformation>& transformations) {
+	for (int i = 0; i < trans.size(); i++) {
+		for (int j = 0; j < faces.size(); j++) {
+			if (transformations[trans[i]].type == TRANSLATE) {
+				faces[j].A += transformations[trans[i]].description;
+				faces[j].B += transformations[trans[i]].description;
+				faces[j].C += transformations[trans[i]].description;
+			} else if (transformations[trans[i]].type == SCALE) {
+				// TODO
+			}
+		}
+	}
+}
+
 void Trianglemesh::compute_normal(){
   glm::vec3 face_normal;
   // Assuming all vertices are given in counter-clock order
