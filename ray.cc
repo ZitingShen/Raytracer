@@ -42,12 +42,12 @@ glm::vec3 trace(Ray& ray, int depth,
   Pigment* pigment = pigments[objects[status.object_id]->pigment];
   
   local_color += phong(point, normal, lights[0], ray,
-        finish, pigment);
+        finish, pigment, objects[status.object_id]);
 
   for(unsigned int i = 1; i < lights.size(); i++) {
     if (is_visible(point, lights[i], objects)) {
       local_color += phong(point, normal, lights[i], ray,
-        finish, pigment);
+        finish, pigment, objects[status.object_id]);
     }
   }
   
@@ -212,9 +212,9 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
       for (int j=0; j<object->num_f; j++){
         if (glm::intersectRayTriangle(ray.origin,
                                       ray.direction,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C,
+                                      object->vertices[object->faces[j].A].pos,
+                                      object->vertices[object->faces[j].B].pos,
+                                      object->vertices[object->faces[j].C].pos,
                                       point)){ // intersect with triangle
           t = glm::length(point - ray.origin);
           dir = glm::dot(ray.direction, object->faces[j].normal);
@@ -342,9 +342,9 @@ bool is_visible(glm::vec3& point, Light& light,
       for (int j=0; j<object->num_f; j++){
         if (glm::intersectRayTriangle(light_ray.origin,
                                       light_ray.direction,
-                                      object->faces[j].A,
-                                      object->faces[j].B,
-                                      object->faces[j].C,
+                                      object->vertices[object->faces[j].A].pos,
+                                      object->vertices[object->faces[j].B].pos,
+                                      object->vertices[object->faces[j].C].pos,
                                       point)){ // intersect with triangle
           t = glm::length(point - light_ray.origin);
           dir = glm::dot(light_ray.direction, object->faces[j].normal);
@@ -361,7 +361,7 @@ bool is_visible(glm::vec3& point, Light& light,
 }
 
 glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
-  Finish& finish, Pigment* pigment) {
+  Finish& finish, Pigment* pigment, Object* object) {
   glm::vec3 ambient_light(0, 0, 0);
   glm::vec3 diffuse_light(0, 0, 0);
   glm::vec3 specular_light(0, 0, 0);
@@ -393,7 +393,34 @@ glm::vec3 phong(glm::vec3& point, glm::vec3& normal, Light& light, Ray& ray,
       color = checker->color1;
     else color = checker->color2;
   } else if (pigment->type == IMAGE) {
-    
+    Image_pigment* image = static_cast<Image_pigment*>(pigment);
+    if (object->type == SPHERE) {
+      Sphere* sphere = static_cast<Sphere*>(object);
+      float t = glm::acos((point.z - sphere->origin.z)/sphere->radius.z)/PI;
+      float s = 0.5 + glm::atan((point.y - sphere->origin.y)*sphere->radius.x
+                              /((point.x - sphere->origin.x)*sphere->radius.y))/PI_2;
+      int index = (((int) (s*image->img.sizeY))*image->img.sizeX
+        + (int) (t*image->img.sizeX))*3;
+      color = glm::vec3(image->img.data[index]/255.0f, 
+                        image->img.data[index+1]/255.0f, 
+                        image->img.data[index+2]/255.0f);
+    } else if (object->type == POLYHEDRON) {
+      int s = (int) point.x % image->img.sizeX;
+      s = image->img.sizeX - s;
+      int t = (int) point.y % image->img.sizeY;
+      int index = t*image->img.sizeX + s;
+      color = glm::vec3(image->img.data[index]/255.0f, 
+                        image->img.data[index+1]/255.0f, 
+                        image->img.data[index+2]/255.0f);
+    } else if (object->type == TRIANGLEMESH) {
+      int s = (int) point.x % image->img.sizeX;
+      s = image->img.sizeX - s;
+      int t = (int) point.y % image->img.sizeY;
+      int index = t*image->img.sizeX + s;
+      color = glm::vec3(image->img.data[index]/255.0f, 
+                        image->img.data[index+1]/255.0f, 
+                        image->img.data[index+2]/255.0f);
+    }
   }
   return (ambient_light + diffuse_light)*color + specular_light;
 }

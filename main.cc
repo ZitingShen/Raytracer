@@ -10,6 +10,7 @@
 #include "view.h"
 #include "output.h"
 #include "ray.h"
+#include "read_ppm.h"
 
 using namespace std;
 
@@ -113,7 +114,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			Image_pigment* new_pigment = new Image_pigment();
 			string image_file;
 			cin >> image_file;
-			read_ppm(c_str(image_file), &Image_pigment->img);
+			read_ppm(image_file.c_str(), &new_pigment->img);
 			new_pigment->type = IMAGE;
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);

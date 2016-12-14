@@ -51,11 +51,11 @@ void Trianglemesh::transform(vector<Transformation>& transformations) {
 	for (unsigned int i = 0; i < trans.size(); i++) {
 		for (unsigned int j = 0; j < vertices.size(); j++) {
 			if (transformations[trans[i]].type == TRANSLATE) {
-				vertices[j] += transformations[trans[i]].description;
+				vertices[j].pos += transformations[trans[i]].description;
 			} else if (transformations[trans[i]].type == SCALE) {
-				vertices[j] -= center;
-				vertices[j] *= transformations[trans[i]].description;
-				vertices[j] += center;
+				vertices[j].pos -= center;
+				vertices[j].pos *= transformations[trans[i]].description;
+				vertices[j].pos += center;
 			}
 		}
 	}

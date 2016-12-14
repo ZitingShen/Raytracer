@@ -46,9 +46,6 @@ class VERTEX{
 
 class FACE{
   public:
-    //glm::vec3 A;
-    //glm::vec3 B;
-    //glm::vec3 C;
     int A; // index in vertices
     int B; // index in vertices
     int C; // index in vertices
