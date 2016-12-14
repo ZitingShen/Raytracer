@@ -3,7 +3,7 @@ CFLAGS=-g -Wall -std=c++11
 
 TARGET=main
 SRC=$(TARGET).cc
-LIB=ray.o object.o transformation.o
+LIB=ray.o object.o transformation.o read_ppm.o
 
 all: main
 
@@ -18,6 +18,9 @@ object.o: object.cc
 
 transformation.o: transformation.cc
 	$(CC) $(CFLAGS) -c transformation.cc
+
+read_ppm.o: read_ppm.c
+	$(CC) $(CFLAGS) -c read_ppm.c
 
 clean:
 	rm $(TARGET) $(LIB)
