@@ -1,4 +1,5 @@
 #include "object.h"
+#include <iostream>
 
 Sphere::Sphere(Object& obj) {
 	id = obj.id;
@@ -22,18 +23,18 @@ Trianglemesh::Trianglemesh(Object& obj) {
 }
 
 void Sphere::transform(vector<Transformation>& transformations) {
-	for (int i = 0; i < trans.size(); i++) {
+	for (unsigned int i = 0; i < trans.size(); i++) {
 		if (transformations[trans[i]].type == SCALE) {
 			radius *= transformations[trans[i]].description;
 		} else if (transformations[trans[i]].type == TRANSLATE) {
-			origin *= transformations[trans[i]].description;
+			origin += transformations[trans[i]].description;
 		}
 	}
 }
 
 void Polyhedron::transform(vector<Transformation>& transformations) {
-	for (int i = 0; i < trans.size(); i++) {
-		for (int j = 0; j < planes.size(); j++) {
+	for (unsigned int i = 0; i < trans.size(); i++) {
+		for (unsigned int j = 0; j < planes.size(); j++) {
 			if (transformations[trans[i]].type == TRANSLATE) {
 				planes[j].w += glm::dot(transformations[trans[i]].description, 
 					glm::normalize(glm::vec3(planes[j])));
@@ -45,8 +46,8 @@ void Polyhedron::transform(vector<Transformation>& transformations) {
 }
 
 void Trianglemesh::transform(vector<Transformation>& transformations) {
-	for (int i = 0; i < trans.size(); i++) {
-		for (int j = 0; j < faces.size(); j++) {
+	for (unsigned int i = 0; i < trans.size(); i++) {
+		for (unsigned int j = 0; j < faces.size(); j++) {
 			if (transformations[trans[i]].type == TRANSLATE) {
 				faces[j].A += transformations[trans[i]].description;
 				faces[j].B += transformations[trans[i]].description;

@@ -161,8 +161,6 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			cin >> x;
 			new_obj->radius = glm::vec3(x, x, x);
 			new_obj->transform(transformations);
-			cout << glm::to_string(new_obj->origin) << endl;
-			cout << glm::to_string(new_obj->radius) << endl;
 			objects.push_back(new_obj);
 		} else if (type == "plane"){
 			Polyhedron* new_obj = new Polyhedron(new_object);

@@ -103,9 +103,10 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
                                            1.0f/object->radius.y, 
                                            1.0f/object->radius.z);
       glm::vec3 co_times_inverse_radius = co*inverse_radius;
+      float inverse_length = glm::length(ray.direction*inverse_radius);
       float co_length = glm::length(co_times_inverse_radius);
-      float a = 1;
-      float b = 2*glm::dot(co_times_inverse_radius, ray.direction);
+      float a = inverse_length*inverse_length;
+      float b = 2*glm::dot(co_times_inverse_radius, ray.direction*inverse_radius);
       float c = co_length*co_length - 1;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
@@ -259,14 +260,15 @@ bool is_visible(glm::vec3& point, Light& light,
   for (unsigned int i = 0; i < objects.size(); i++) {
     if (objects[i]->type == SPHERE) {
     Sphere* object = static_cast<Sphere*>(objects[i]);
-      glm::vec3 co = light_ray.origin - object->origin;
+     glm::vec3 co = light_ray.origin - object->origin;
       glm::vec3 inverse_radius = glm::vec3(1.0f/object->radius.x, 
                                            1.0f/object->radius.y, 
                                            1.0f/object->radius.z);
       glm::vec3 co_times_inverse_radius = co*inverse_radius;
+      float inverse_length = glm::length(light_ray.direction*inverse_radius);
       float co_length = glm::length(co_times_inverse_radius);
-      float a = 1;
-      float b = 2*glm::dot(co_times_inverse_radius, light_ray.direction);
+      float a = inverse_length*inverse_length;
+      float b = 2*glm::dot(co_times_inverse_radius, light_ray.direction*inverse_radius);
       float c = co_length*co_length - 1;
       float delta = b*b - 4*a*c;
       if (delta == 0) {
