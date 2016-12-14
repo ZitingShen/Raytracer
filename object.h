@@ -5,6 +5,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "transformation.h"
 
 using namespace std;
@@ -77,5 +79,7 @@ class Intersect_status{
 };
 
 glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point);
+
+bool read_triangle_mesh(Trianglemesh* new_obj);
 
 #endif

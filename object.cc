@@ -119,3 +119,59 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
   }
 	return glm::vec3(0, 0, 0);
 }
+
+
+bool read_triangle_mesh(Trianglemesh* new_obj){
+  string off;
+  ifstream my_fin;
+  int holder;
+
+  cin >> new_obj->off_file; // get filename
+  my_fin.open(new_obj->off_file);
+  if (!my_fin.is_open()){
+    cerr << "TRIANGLEMESH: CAN NOT OPEN FILE: " << new_obj->off_file <<endl;
+    return false;
+  }
+
+  getline(my_fin, off);
+  if (off.compare("OFF") != 0){
+    cerr << "TRIANGLEMESH: NOT AN OFF FILE: " << new_obj->off_file <<endl;
+    return false;
+  }
+  /* reading attributs */
+  my_fin >> new_obj->num_v;
+  my_fin >> new_obj->num_f;
+  my_fin >> holder; // new_e: obsolete info
+  /* reading vertices */
+  new_obj->vertices.resize(new_obj->num_v);
+  for (int i = 0; i< new_obj->num_v; i++){
+    for (int j = 0; j < 3; j++){
+      my_fin >> new_obj->vertices[i].pos[j];
+    }
+  }
+  /* reading faces */
+  new_obj->faces.resize(new_obj->num_f);
+  for (int i = 0; i< new_obj->num_f; i++){
+    my_fin >> holder; // the number 3
+    if (holder != 3){
+      cerr << "TRIANGLEMESH: NON TRIANGULAR FACE DETECTED: " << holder << endl;
+      return false;
+    }
+    my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
+    new_obj->faces[i].A = holder; // record the index to vector<VERTEX>
+
+    my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
+    new_obj->faces[i].B = holder;
+
+    my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
+    new_obj->faces[i].C = holder;
+  }
+
+  my_fin.close();
+  new_obj->compute_normal(); // compute face & vertex normals
+  new_obj->compute_center();
+  return true;
+}
