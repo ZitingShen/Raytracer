@@ -35,6 +35,16 @@ Trianglemesh::~Trianglemesh(){
   this->vertices.clear();
 }
 
+Cylinder::Cylinder(Object& obj){
+	id = obj.id;
+	pigment = obj.pigment;
+	finish = obj.finish;
+	trans = obj.trans;
+}
+
+Cylinder::~Cylinder(){
+
+}
 
 //VERTEX::~VERTEX(){
 //  this->face_indices.clear();
@@ -86,6 +96,17 @@ void Trianglemesh::transform(vector<Transformation>& transformations) {
 			}
 		}
 	}
+}
+
+void Cylinder::transform(vector<Transformation>& transformations){
+  for (unsigned int i=0; i<trans.size(); i++){
+    if (transformations[trans[i]].type == SCALE){
+      //TODO
+    }else if (transformations[trans[i]].type == TRANSLATE){
+      origin_A += transformations[trans[i]].description;
+      origin_B += transformations[trans[i]].description;
+    }
+  }
 }
 
 void Trianglemesh::compute_normal(){
@@ -178,7 +199,7 @@ void Trianglemesh::generate_off(){
     }
     off << endl;
   }
-  
+
   return;
 }
 

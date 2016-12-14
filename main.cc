@@ -57,6 +57,10 @@ int main(){
 	output_file.close();
 
   for (Pigment* pig_garbage : pigments){
+    if (pig_garbage->type == IMAGE){
+      Image_pigment* temp = static_cast<Image_pigment*>(pig_garbage);
+      free(temp->img.data);
+    }
 		delete pig_garbage;
   }
 
@@ -205,12 +209,26 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
 			new_obj->type = TRIANGLEMESH;
 		  if(!read_triangle_mesh(new_obj)){ // function in object.h
-			cerr << "Error when reading trianglemesh" << endl; 
-		exit(1);
+			  cerr << "Error when reading trianglemesh" << endl; 
+		    exit(1);
 		  }
 		  new_obj->transform(transformations);
-	  objects.push_back(new_obj);
-	}
+	    objects.push_back(new_obj);
+	  } else if (type == "cylinder") {
+      Cylinder* new_obj = new Cylinder(new_object);
+      new_obj->type = CYLINDER;
+      cin >> new_obj->Pa;
+      cin >> new_obj->Va;
+      cin >> new_obj->radius;
+      cin >> new_obj->origin_A[0];
+      cin >> new_obj->origin_A[1];
+      cin >> new_obj->origin_A[2];
+      cin >> new_obj->origin_B[0];
+      cin >> new_obj->origin_B[1];
+      cin >> new_obj->origin_B[2];
+      new_obj->transform(transformations);
+      objects.push_back(new_obj);
+    }
 	}
 }
 
