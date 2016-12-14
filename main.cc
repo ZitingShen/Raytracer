@@ -55,6 +55,16 @@ int main(){
 		}
 	}
 	output_file.close();
+
+  for (Pigment* pig_garbage : pigments){
+    delete pig_garbage;
+  }
+
+  for (Object* obj_garbage : objects){
+    delete obj_garbage;
+  }
+
+  return 0;
 }
 
 void read_in(Output& output, View& view, vector<Light>& lights,
@@ -111,6 +121,7 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
 		} else if (type == "image") {
+<<<<<<< HEAD
 			Image_pigment* new_pigment = new Image_pigment();
 			string image_file;
 			cin >> image_file;
@@ -118,6 +129,15 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->type = IMAGE;
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
+=======
+			//Image_pigment* new_pigment = new Image_pigment();
+			//string image_file;
+			//cin >> image_file;
+			//read_ppm(c_str(image_file), &Image_pigment->img);
+			//new_pigment->type = IMAGE;
+			//new_pigment->id = i;
+			//pigments.push_back(new_pigment);
+>>>>>>> ae49117a84a92bdd8b3db8aa452ea933a978c912
 		}
 	}
 

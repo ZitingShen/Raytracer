@@ -8,6 +8,10 @@ Sphere::Sphere(Object& obj) {
 	trans = obj.trans;
 }
 
+Sphere::~Sphere(){
+  /* Do nothing */
+}
+
 Polyhedron::Polyhedron(Object& obj) {
 	id = obj.id;
 	pigment = obj.pigment;
@@ -15,11 +19,34 @@ Polyhedron::Polyhedron(Object& obj) {
 	trans = obj.trans;
 }
 
+Polyhedron::~Polyhedron(){
+  /* Do nothing */
+}
+
 Trianglemesh::Trianglemesh(Object& obj) {
 	id = obj.id;
 	pigment = obj.pigment;
 	finish = obj.finish;
 	trans = obj.trans;
+}
+
+Trianglemesh::~Trianglemesh(){
+  this->faces.clear();
+  this->vertices.clear();
+}
+
+
+//VERTEX::~VERTEX(){
+//  this->face_indices.clear();
+//}
+
+//FACE::~FACE(){
+//  * Do nothing */
+//}
+
+
+Intersect_status::~Intersect_status(){
+  /* Do Nothing */
 }
 
 void Sphere::transform(vector<Transformation>& transformations) {
@@ -74,10 +101,10 @@ void Trianglemesh::compute_normal(){
   for (int i = 0; i< num_v; i++){
     vertices[i].normal = glm::vec3(0, 0, 0);
     for (unsigned int j = 0; j < vertices[i].face_indices.size(); j++){
-      vertices[i].normal += faces[j].normal;
+      vertices[i].normal += faces[ vertices[i].face_indices[j] ].normal;
     }
-    vertices[i].normal = glm::normalize(vertices[i].normal 
-      * (1.0f / vertices[i].face_indices.size()));
+    vertices[i].normal = glm::normalize(vertices[i].normal
+      * (1.0f / static_cast<float>(vertices[i].face_indices.size())));
   }
 }
 
@@ -114,12 +141,46 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
     glm::vec3 point_normal = glm::normalize(AP_weight / total_weight * tria->vertices[tria->faces[plane_id].A].normal
                                           + BP_weight / total_weight * tria->vertices[tria->faces[plane_id].B].normal
                                           + CP_weight / total_weight * tria->vertices[tria->faces[plane_id].C].normal);
-    
+ 
     return point_normal;
   }
 	return glm::vec3(0, 0, 0);
 }
 
+void Trianglemesh::generate_off(){
+  string name = "test.off";
+  fstream off;
+  off.open(name);
+  off << "OFF" << endl;
+  off << num_v << " " << num_f << " " << 0 << endl;
+  for (int i=0; i<num_v; i++){
+    off << vertices[i].pos[0] << " " << vertices[i].pos[1] << " " << vertices[i].pos[2] << endl;
+  }
+  for (int i=0; i<num_f; i++){
+    off << 3 << " " << faces[i].A << " " << faces[i].B << " " << faces[i].C << endl;
+  }
+
+  off << "Below are additional debug info" << endl;
+  off << "vertex normals" << endl;
+  for (int i=0; i<num_v; i++){
+    off << vertices[i].normal[0] << " " << vertices[i].normal[1] << " " << vertices[i].normal[2] << endl;
+  }
+
+  off << "face nromals" << endl;
+  for (int i=0; i<num_f; i++){
+    off << faces[i].normal[0] << " " << faces[i].normal[1] << " " << faces[i].normal[2] << endl;
+  }
+
+  off << "faces shared by vertices" << endl;
+  for (int i=0; i<num_v; i++){
+    for (unsigned int j=0; j<vertices[i].face_indices.size(); j++){
+      off << vertices[i].face_indices[j] << " ";
+    }
+    off << endl;
+  }
+  
+  return;
+}
 
 bool read_triangle_mesh(Trianglemesh* new_obj){
   string off;
@@ -173,5 +234,6 @@ bool read_triangle_mesh(Trianglemesh* new_obj){
   my_fin.close();
   new_obj->compute_normal(); // compute face & vertex normals
   new_obj->compute_center();
+  // new_obj->generate_off(); // test if read-in is correct
   return true;
 }

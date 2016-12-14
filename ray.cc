@@ -58,7 +58,7 @@ glm::vec3 trace(Ray& ray, int depth,
   }
   if (finish.transmission > 0) {
     float eta;
-    if (status.reverse_normal) eta = finish.refraction;
+    if (status.reverse_normal) eta = finish.refraction/1.0f;
     else eta = 1.0f/finish.refraction;
     Ray Rt = transmit(ray, point, normal, eta);
     transmitted_color = trace(Rt, depth+1, objects, lights, finishes, 
@@ -91,7 +91,7 @@ void write_pixel(ofstream& output_file, glm::vec3& color,
   }
 }
 
-glm::vec3 intersect(Ray& ray, vector<Object*>& objects, 
+glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
   Intersect_status& status) {
   status.type = NO_INTERSECTION;
   glm::vec3 point(0, 0, 0);
@@ -99,8 +99,8 @@ glm::vec3 intersect(Ray& ray, vector<Object*>& objects,
     if (objects[i]->type == SPHERE) {
       Sphere* object = static_cast<Sphere*>(objects[i]);
       glm::vec3 co = ray.origin - object->origin;
-      glm::vec3 inverse_radius = glm::vec3(1.0f/object->radius.x, 
-                                           1.0f/object->radius.y, 
+      glm::vec3 inverse_radius = glm::vec3(1.0f/object->radius.x,
+                                           1.0f/object->radius.y,
                                            1.0f/object->radius.z);
       glm::vec3 co_times_inverse_radius = co*inverse_radius;
       float inverse_length = glm::length(ray.direction*inverse_radius);
@@ -437,8 +437,7 @@ Ray reflect(Ray& ray, glm::vec3& point, glm::vec3& normal) {
 Ray transmit(Ray& ray, glm::vec3& point, glm::vec3& normal, float refraction) {
   Ray transmitted_ray;
   transmitted_ray.origin = point - normal*0.01f;
-  transmitted_ray.direction = glm::normalize(glm::refract(ray.direction, normal, 
-    refraction));
+  transmitted_ray.direction = glm::normalize(glm::refract(ray.direction, normal, refraction));
   transmitted_ray.t = FLT_MAX;
   return transmitted_ray;
 }
