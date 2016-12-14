@@ -66,12 +66,12 @@ void Trianglemesh::compute_normal(){
   // Assuming all vertices are given in counter-clock order
   // Computing face normals
   for (int i = 0; i < num_f; i++){
-    face_normal = glm::cross(faces[i].C - faces[i].B,
-                             faces[i].A - faces[i].B);
+    face_normal = glm::cross(vertices[faces[i].C].pos - vertices[faces[i].B].pos,
+                             vertices[faces[i].A].pos - vertices[faces[i].B].pos);
     faces[i].normal = glm::normalize(face_normal);
   }
   // Computing vertex normals
-  for (unsigned int i = 0; i< num_v; i++){
+  for (int i = 0; i< num_v; i++){
     vertices[i].normal = glm::vec3(0, 0, 0);
     for (unsigned int j = 0; j < vertices[i].face_indices.size(); j++){
       vertices[i].normal += faces[j].normal;
@@ -80,6 +80,16 @@ void Trianglemesh::compute_normal(){
       * (1.0f / vertices[i].face_indices.size()));
   }
 }
+
+void Trianglemesh::compute_center(){
+  glm::vec3 result(0,0,0);
+  for (int i=0; i<this->num_v; i++){
+    result += this->vertices[i].pos;
+  }
+  result = result * (1.0f/static_cast<float>(this->num_v));
+  this->center = result;
+}
+
 
 glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
 	if (object->type == SPHERE) {
@@ -94,7 +104,18 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
     //TODO will need to return interpolated vertex normal for phong
     //     currently returning face normal (flat-shading)
     Trianglemesh* tria = static_cast<Trianglemesh*>(object);
-    return tria->faces[plane_id].normal;
+    float AP = glm::distance(tria->vertices[tria->faces[plane_id].A].pos, point);
+    float BP = glm::distance(tria->vertices[tria->faces[plane_id].B].pos, point);
+    float CP = glm::distance(tria->vertices[tria->faces[plane_id].C].pos, point);
+    float AP_weight = (AP + BP + CP) - AP;
+    float BP_weight = (AP + BP + CP) - BP;
+    float CP_weight = (AP + BP + CP) - CP;
+    float total_weight = AP_weight + BP_weight + CP_weight;
+    glm::vec3 point_normal = glm::normalize(AP_weight / total_weight * tria->vertices[tria->faces[plane_id].A].normal
+                                          + BP_weight / total_weight * tria->vertices[tria->faces[plane_id].B].normal
+                                          + CP_weight / total_weight * tria->vertices[tria->faces[plane_id].C].normal);
+    
+    return point_normal;
   }
 	return glm::vec3(0, 0, 0);
 }

@@ -44,9 +44,12 @@ class VERTEX{
 
 class FACE{
   public:
-    glm::vec3 A;
-    glm::vec3 B;
-    glm::vec3 C;
+    //glm::vec3 A;
+    //glm::vec3 B;
+    //glm::vec3 C;
+    int A; // index in vertices
+    int B; // index in vertices
+    int C; // index in vertices
     glm::vec3 normal;
 };
 
@@ -60,7 +63,9 @@ class Trianglemesh: public Object {
     int num_f;
     vector<VERTEX> vertices;
     vector<FACE> faces;
+    glm::vec3 center;
     void compute_normal();
+    void compute_center();
 };
 
 class Intersect_status{

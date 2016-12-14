@@ -238,18 +238,19 @@ bool read_triangle_mesh(Trianglemesh* new_obj){
     }
     my_fin >> holder;
     new_obj->vertices[holder].face_indices.push_back(i);
-    new_obj->faces[i].A = new_obj->vertices[holder].pos;
-
-    my_fin >> holder;
-   new_obj->vertices[holder].face_indices.push_back(i);
-    new_obj->faces[i].B = new_obj->vertices[holder].pos;
+    new_obj->faces[i].A = holder; // record the index to vector<VERTEX>
 
     my_fin >> holder;
     new_obj->vertices[holder].face_indices.push_back(i);
-    new_obj->faces[i].C = new_obj->vertices[holder].pos;
+    new_obj->faces[i].B = holder;
+
+    my_fin >> holder;
+    new_obj->vertices[holder].face_indices.push_back(i);
+    new_obj->faces[i].C = holder;
   }
 
   my_fin.close();
   new_obj->compute_normal(); // compute face & vertex normals
+  new_obj->compute_center();
   return true;
 }
