@@ -205,12 +205,12 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
 			new_obj->type = TRIANGLEMESH;
 		  if(!read_triangle_mesh(new_obj)){ // function in object.h
-			cerr << "Error when reading trianglemesh" << endl; 
-		exit(1);
-		  }
+				cerr << "Error when reading trianglemesh" << endl; 
+				exit(1);
+		 	}
 		  new_obj->transform(transformations);
-	  objects.push_back(new_obj);
-	}
+	  	objects.push_back(new_obj);
+		}
 	}
 }
 

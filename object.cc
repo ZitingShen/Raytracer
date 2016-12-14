@@ -45,6 +45,17 @@ Trianglemesh::~Trianglemesh(){
 //}
 
 
+Cone::Cone(Object& obj) {
+	id = obj.id;
+	pigment = obj.pigment;
+	finish = obj.finish;
+	trans = obj.trans;
+}
+
+Cone::~Cone() {
+	/* Do nothing */
+}
+
 Intersect_status::~Intersect_status(){
   /* Do Nothing */
 }
@@ -84,6 +95,24 @@ void Trianglemesh::transform(vector<Transformation>& transformations) {
 				vertices[j].pos *= transformations[trans[i]].description;
 				vertices[j].pos += center;
 			}
+		}
+	}
+}
+
+
+void Cone::transform(vector<Transformation>& transformations) {
+	for (unsigned int i = 0; i < trans.size(); i++) {
+		if (transformations[trans[i]].type == TRANSLATE) {
+			direction += transformations[trans[i]].description;
+		} else if (transformations[trans[i]].type == SCALE) {
+			//TODO
+			cap_plane.x *= transformations[trans[i]].description.x;
+			cap_plane.y *= transformations[trans[i]].description.y;
+			cap_plane.z *= transformations[trans[i]].description.z;
+			cap_plane.r *= glm::dot(transformations[trans[i]], 
+				(transformations[trans[i]].description.x + 
+				 transformations[trans[i]].description.y +
+				 transformations[trans[i]].description.z)/3);
 		}
 	}
 }
