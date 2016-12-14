@@ -8,6 +8,10 @@ Sphere::Sphere(Object& obj) {
 	trans = obj.trans;
 }
 
+Sphere::~Sphere(){
+  /* Do nothing */
+}
+
 Polyhedron::Polyhedron(Object& obj) {
 	id = obj.id;
 	pigment = obj.pigment;
@@ -15,11 +19,34 @@ Polyhedron::Polyhedron(Object& obj) {
 	trans = obj.trans;
 }
 
+Polyhedron::~Polyhedron(){
+  /* Do nothing */
+}
+
 Trianglemesh::Trianglemesh(Object& obj) {
 	id = obj.id;
 	pigment = obj.pigment;
 	finish = obj.finish;
 	trans = obj.trans;
+}
+
+Trianglemesh::~Trianglemesh(){
+  this->faces.clear();
+  this->vertices.clear();
+}
+
+
+//VERTEX::~VERTEX(){
+//  this->face_indices.clear();
+//}
+
+//FACE::~FACE(){
+//  * Do nothing */
+//}
+
+
+Intersect_status::~Intersect_status(){
+  /* Do Nothing */
 }
 
 void Sphere::transform(vector<Transformation>& transformations) {

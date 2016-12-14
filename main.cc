@@ -54,6 +54,16 @@ int main(){
 		}
 	}
 	output_file.close();
+
+  for (Pigment* pig_garbage : pigments){
+    delete pig_garbage;
+  }
+
+  for (Object* obj_garbage : objects){
+    delete obj_garbage;
+  }
+
+  return 0;
 }
 
 void read_in(Output& output, View& view, vector<Light>& lights,

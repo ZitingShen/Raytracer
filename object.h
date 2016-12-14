@@ -27,6 +27,7 @@ class Sphere: public Object{
     glm::vec3 origin;
     glm::vec3 radius;
     Sphere(Object& obj);
+    ~Sphere();
     void transform(vector<Transformation>& transformations);
 };
 
@@ -34,18 +35,23 @@ class Polyhedron: public Object {
   public:
     vector<glm::vec4> planes;
     Polyhedron(Object& obj);
+    ~Polyhedron();
     void transform(vector<Transformation>& transformations);
 };
 
-class VERTEX{
-  public:
+//class VERTEX{
+//  public:
+//    ~VERTEX();
+struct VERTEX{
     glm::vec3 pos;
     glm::vec3 normal;
     vector<int> face_indices;
 };
 
-class FACE{
-  public:
+//class FACE{
+//  public:
+//    ~FACE();
+struct FACE{
     int A; // index in vertices
     int B; // index in vertices
     int C; // index in vertices
@@ -56,6 +62,7 @@ class Trianglemesh: public Object {
   public:
     string off_file;
     Trianglemesh(Object& obj);
+    ~Trianglemesh();
     void transform(vector<Transformation>& transformations);
     /* reading from file */
     int num_v;
@@ -68,8 +75,20 @@ class Trianglemesh: public Object {
     void generate_off();
 };
 
+class cylinder : public Object{
+  public:
+    cylinder(Object& obj);
+    ~cylinder();
+    glm::vec3 origin_A;
+    glm::vec3 origin_B;
+    float radius;
+    float height;
+    void transform(vector<Transformation>& transformations);
+};
+
 class Intersect_status{
   public:
+    ~Intersect_status();
     Intersect_type type;
     int object_id;
     int plane_id;
