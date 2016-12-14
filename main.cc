@@ -57,11 +57,15 @@ int main(){
 	output_file.close();
 
   for (Pigment* pig_garbage : pigments){
-    delete pig_garbage;
+		delete pig_garbage;
   }
 
   for (Object* obj_garbage : objects){
-    delete obj_garbage;
+  	if (type == "trianglemesh") {
+			Trianglemesh* tri_garbage = static_cast<Trianglemesh*>(obj_garbage);
+			delete tri_garbage;
+		} else 
+			delete obj_garbage;
   }
 
   return 0;
@@ -121,7 +125,6 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
 		} else if (type == "image") {
-<<<<<<< HEAD
 			Image_pigment* new_pigment = new Image_pigment();
 			string image_file;
 			cin >> image_file;
@@ -129,15 +132,6 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_pigment->type = IMAGE;
 			new_pigment->id = i;
 			pigments.push_back(new_pigment);
-=======
-			//Image_pigment* new_pigment = new Image_pigment();
-			//string image_file;
-			//cin >> image_file;
-			//read_ppm(c_str(image_file), &Image_pigment->img);
-			//new_pigment->type = IMAGE;
-			//new_pigment->id = i;
-			//pigments.push_back(new_pigment);
->>>>>>> ae49117a84a92bdd8b3db8aa452ea933a978c912
 		}
 	}
 
@@ -145,9 +139,9 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 	for (int i = 0 ; i < num_finishes; i++) {
 		Finish new_finish;
 		cin >> new_finish.ambient
-		    >> new_finish.diffuse 
-		    >> new_finish.specular
-		    >> new_finish.shininess
+			>> new_finish.diffuse 
+			>> new_finish.specular
+			>> new_finish.shininess
 				>> new_finish.reflectivity 
 				>> new_finish.transmission 
 				>> new_finish.refraction;
@@ -211,12 +205,12 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			Trianglemesh* new_obj = new Trianglemesh(new_object);
 			new_obj->type = TRIANGLEMESH;
 		  if(!read_triangle_mesh(new_obj)){ // function in object.h
-		  	cerr << "Error when reading trianglemesh" << endl; 
-        exit(1);
+			cerr << "Error when reading trianglemesh" << endl; 
+		exit(1);
 		  }
 		  new_obj->transform(transformations);
-      objects.push_back(new_obj);
-    }
+	  objects.push_back(new_obj);
+	}
 	}
 }
 
