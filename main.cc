@@ -61,7 +61,7 @@ int main(){
   }
 
   for (Object* obj_garbage : objects){
-  	if (type == "trianglemesh") {
+  	if (obj_garbage->type == TRIANGLEMESH) {
 			Trianglemesh* tri_garbage = static_cast<Trianglemesh*>(obj_garbage);
 			delete tri_garbage;
 		} else 
