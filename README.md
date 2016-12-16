@@ -11,7 +11,7 @@ Extra Credit:
 0. Extra primitives:
   Ellipsoid, it shares the same primitive class with Sphere
   Implementation of Cylinder and Cone is incomplete
-  Example: test5_ellipse.ppm
+  Example: test1.ppm, test5_ellipse.ppm
   usage:
   ellipsoid x y z a b c # an ellipsoid defined as xˆ2/aˆ2 + yˆ2/bˆ2 + zˆ2/cˆ2 = 1
 1. Translate and Scale:
@@ -23,8 +23,8 @@ Extra Credit:
   Rectangular textures could be mapped onto sphere (haven't tested on other), but as unlike skybox there are places of incongruous conjucture
   Example: test1.ppm
 
-
 Efficiency - Most complex scene rendered:
-
+0.Bunny.off with trace depth 3 takes about 2 hours to render on my early 2015 rmbp '13
 
 Debug Mode:
+
