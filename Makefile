@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -std=c++11
+CFLAGS=-O2 -g -Wall -std=c++11
 
 TARGET=main
 SRC=$(TARGET).cc
