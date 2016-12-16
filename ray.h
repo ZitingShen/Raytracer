@@ -20,6 +20,8 @@
 #define TRACE_DEPTH_MAX           3
 #define RADIAN_TO_DEGREE          57.29578f // 180 over pi
 #define DEGREE_TO_RADIAN          0.00873f
+#define DEBUG_I                   -1
+#define DEBUG_J                   -1
 const glm::vec3 BACKGROUND_COLOR = glm::vec3(0, 0, 0);
 
 class Ray{
@@ -27,6 +29,7 @@ class Ray{
 		glm::vec3 origin;
     glm::vec3 direction;
     float t; // constant o + td
+    bool debug = false;
 };
 
 void compute_ray(View& view, float i, float j, Ray& ray);

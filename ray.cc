@@ -12,6 +12,7 @@ void compute_ray(View& view, float i, float j, Ray& ray) {
   + (view.h*0.5f - view.pixel*i)*view.camera_y
   + (-1.0f)*view.camera_z);
   ray.t = FLT_MAX;
+  if (i == DEBUG_I && j == DEBUG_J) ray.debug = true;
 }
 
 void set_up_camera_frame(View& view, Output& output) {
@@ -33,11 +34,33 @@ glm::vec3 trace(Ray& ray, int depth,
   glm::vec3 transmitted_color(0, 0, 0);
   Intersect_status status;
   glm::vec3 point = intersect(ray, objects, status);
+  if (ray.debug == true) {
+    cout << "Trace status for ray " << i << " " << j << endl;
+    if (status.type == NO_INTERSECTION) 
+      cout << "No intersection" << endl;
+    else {
+      cout << "Object intersected id: " << status.object_id << endl;
+      if (objects[status.object_id] == SPHERE) { 
+        cout << "Object type: sphere or ellipsoid" << endl;
+      } else if (objects[status.object_id] == POLYHEDRON) {
+        cout << "Object type: polyhedron" << endl;
+      } else if (objects[status.object_id] == TRIANGLEMESH) {
+        cout << "Object type: triangle mesh" << endl;
+      }
+      cout << "Point of closest intersection: "
+           << glm::to_string(point) << endl; 
+    }
+  }
+
   if (status.type == NO_INTERSECTION) return BACKGROUND_COLOR;
   glm::vec3 normal = compute_normal(objects[status.object_id], status.plane_id,
    point);
   if (status.reverse_normal) normal *= -1.0f;
   
+  if (ray.debug == true)
+    cout << "Normal vector: "
+         << glm::to_string(normal) << endl; 
+
   Finish& finish = finishes[objects[status.object_id]->finish];
   Pigment* pigment = pigments[objects[status.object_id]->pigment];
   
@@ -46,13 +69,19 @@ glm::vec3 trace(Ray& ray, int depth,
 
   for(unsigned int i = 1; i < lights.size(); i++) {
     if (is_visible(point, lights[i], objects)) {
+      if (ray.debug == true) cout << "Visibility: visible" << endl;
       local_color += phong(point, normal, lights[i], ray,
         finish, pigment, objects[status.object_id]);
+    } else {
+      if (ray.debug == true) cout << "Visibility: not visible" << endl;
     }
   }
   
   if (finish.reflectivity > 0) {
     Ray Rr = reflect(ray, point, normal);
+    if (ray.debug == true) 
+      cout << "Reflected ray: " 
+           << glm::to_string(Rr.direction) << endl;
     reflected_color = trace(Rr, depth+1, objects, lights, finishes, 
       pigments);
   }
@@ -61,6 +90,9 @@ glm::vec3 trace(Ray& ray, int depth,
     if (status.reverse_normal) eta = finish.refraction/1.0f;
     else eta = 1.0f/finish.refraction;
     Ray Rt = transmit(ray, point, normal, eta);
+    if (ray.debug == true) 
+      cout << "Transmitted ray: " 
+           << glm::to_string(Rt.direction) << endl;
     transmitted_color = trace(Rt, depth+1, objects, lights, finishes, 
       pigments);
   }
