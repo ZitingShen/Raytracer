@@ -42,15 +42,15 @@ int main(){
 	for (int i = 0; i < output.height; i++) {
 		for (int j = 0; j < output.width; j++) {
 			glm::vec3 color(0, 0, 0);
-			//for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
-			//	for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
+			for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
+				for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
 					Ray ray;
-			//		compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
-					compute_ray(view, i, j, ray);
+					compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
+					//compute_ray(view, i, j, ray);
 					color += trace(ray, 0, objects, lights, finishes, pigments);
-			//	}
-			//}
-			//color = color*(1/9.0f);
+				}
+			}
+			color = color*(1/9.0f);
 			write_pixel(output_file, color, output.format);
 		}
 	}
@@ -188,7 +188,13 @@ void read_in(Output& output, View& view, vector<Light>& lights,
 			new_obj->radius = glm::vec3(x, x, x);
 			new_obj->transform(transformations);
 			objects.push_back(new_obj);
-		} else if (type == "plane"){
+    } else if (type == "ellipsoid"){
+      Sphere* new_obj = new Sphere(new_object);
+      cin >> new_obj->origin.x >> new_obj->origin.y >> new_obj->origin.z;
+      cin >> new_obj->radius.x >> new_obj->radius.y >> new_obj->radius.z;
+      new_obj->transform(transformations);
+      objects.push_back(new_obj);
+    } else if (type == "plane"){
 			Polyhedron* new_obj = new Polyhedron(new_object);
 			new_obj->type = POLYHEDRON;
 			cin >> x >> y >> z >> w;

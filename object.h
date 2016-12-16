@@ -11,7 +11,7 @@
 
 using namespace std;
 
-typedef enum _object_type{SPHERE, POLYHEDRON, TRIANGLEMESH, CYLINDER, CONE} Object_type;
+typedef enum _object_type{SPHERE, POLYHEDRON, TRIANGLEMESH, CYLINDER, CONE, ELLIPSOID} Object_type;
 typedef enum _intersect_type{NO_INTERSECTION, YES_INTERSECTION} Intersect_type;
 
 class Object {
@@ -39,9 +39,6 @@ class Polyhedron: public Object {
     void transform(vector<Transformation>& transformations);
 };
 
-//class VERTEX{
-//  public:
-//    ~VERTEX();
 struct VERTEX{
     glm::vec3 pos;
     glm::vec3 normal;

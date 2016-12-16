@@ -120,10 +120,10 @@ void Cone::transform(vector<Transformation>& transformations) {
 			cap_plane.x *= transformations[trans[i]].description.x;
 			cap_plane.y *= transformations[trans[i]].description.y;
 			cap_plane.z *= transformations[trans[i]].description.z;
-			cap_plane.r *= glm::dot(transformations[trans[i]], 
-				(transformations[trans[i]].description.x + 
-				 transformations[trans[i]].description.y +
-				 transformations[trans[i]].description.z)/3);
+		//	cap_plane.r *= glm::dot(transformations[trans[i]], 
+	  //			  transformations[trans[i]].description.x + 
+		//		 transformations[trans[i]].description.y +
+		//		 transformations[trans[i]].description.z)/3;
 		}
 	}
 }
@@ -161,7 +161,9 @@ void Trianglemesh::compute_center(){
 glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
 	if (object->type == SPHERE) {
 		Sphere* sphere = static_cast<Sphere*>(object);
-		return glm::normalize(point - sphere->origin);
+		return glm::normalize(glm::vec3( (point.x-sphere->origin.x)/sphere->radius.x, 
+                                     (point.y-sphere->origin.y)/sphere->radius.y,
+                                     (point.z-sphere->origin.z)/sphere->radius.z));
 	} else if (object->type == POLYHEDRON) {
 		Polyhedron* poly = static_cast<Polyhedron*>(object);
 		return glm::normalize(glm::vec3(poly->planes[plane_id].x, 
@@ -169,6 +171,7 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
 																		poly->planes[plane_id].z));
 	} else if (object->type == TRIANGLEMESH) {
     Trianglemesh* tria = static_cast<Trianglemesh*>(object);
+    
     float AP = glm::distance(tria->vertices[tria->faces[plane_id].A].pos, point);
     float BP = glm::distance(tria->vertices[tria->faces[plane_id].B].pos, point);
     float CP = glm::distance(tria->vertices[tria->faces[plane_id].C].pos, point);
@@ -181,6 +184,27 @@ glm::vec3 compute_normal(Object* object, int plane_id, glm::vec3& point) {
                                           + CP_weight / total_weight * tria->vertices[tria->faces[plane_id].C].normal);
  
     return point_normal;
+    /*
+    float AP = glm::distance(tria->vertices[tria->faces[plane_id].A].pos, point);
+    float BP = glm::distance(tria->vertices[tria->faces[plane_id].B].pos, point);
+    float CP = glm::distance(tria->vertices[tria->faces[plane_id].C].pos, point);
+    float AB = glm::distance(tria->vertices[tria->faces[plane_id].A].pos,
+                             tria->vertices[tria->faces[plane_id].B].pos);
+    float AC = glm::distance(tria->vertices[tria->faces[plane_id].A].pos,
+                             tria->vertices[tria->faces[plane_id].C].pos);
+    float BC = glm::distance(tria->vertices[tria->faces[plane_id].B].pos,
+                             tria->vertices[tria->faces[plane_id].C].pos);
+    float s_ABC = (AB + BC + AC) * 0.5f;
+    float AREA_ABC = sqrt(s_ABC*(s_ABC-AB)*(s_ABC-BC)*(s_ABC-AC));
+    float s_APB = (AB + AP + BP) * 0.5f;
+    float AREA_APB = sqrt(s_APB*(s_APB-AB)*(s_APB-AP)*(s_APB-BP));
+    float s_APC = (AC + AP + CP) * 0.5f;
+    float AREA_APC = sqrt(s_APC*(s_APC-AC)*(s_APC-AP)*(s_APC-CP));
+    float u = AREA_APB / AREA_ABC;
+    float v = AREA_APC / AREA_ABC;
+    float w = 1.0f - u - v;
+    return tria->faces[plane_id].normal;
+    */
   }
 	return glm::vec3(0, 0, 0);
 }
