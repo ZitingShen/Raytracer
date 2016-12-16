@@ -14,6 +14,9 @@
 
 using namespace std;
 
+#define DEBUG_I                   -1
+#define DEBUG_J                   -1
+
 void read_in(Output& output, View& view, vector<Light>& lights,
 	vector<Pigment*>& pigments, vector<Finish>& finishes,
 	vector<Transformation>& transformations, vector<Object*>& objects);
@@ -45,9 +48,15 @@ int main(){
 			for (float anti_alias_x = 0; anti_alias_x <= 1; anti_alias_x+=0.5f) {
 				for (float anti_alias_y = 0; anti_alias_y <= 1; anti_alias_y+=0.5f) {
 					Ray ray;
+					if (i == DEBUG_I && j == DEBUG_J) {
+    				ray.debug = true;
+    				cout << "Trace status for ray " << i+anti_alias_x << " " 
+    				                                << j+anti_alias_y << endl;
+  				}
 					compute_ray(view, i+anti_alias_x, j+anti_alias_y, ray);
 					//compute_ray(view, i, j, ray);
 					color += trace(ray, 0, objects, lights, finishes, pigments);
+					if (ray.debug) cout << endl;
 				}
 			}
 			color = color*(1/9.0f);
