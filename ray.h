@@ -17,7 +17,7 @@
 
 #define PI                        3.14159f
 #define PI_2                      6.28318f
-#define TRACE_DEPTH_MAX           3
+#define TRACE_DEPTH_MAX           6
 #define RADIAN_TO_DEGREE          57.29578f // 180 over pi
 #define DEGREE_TO_RADIAN          0.00873f
 const glm::vec3 BACKGROUND_COLOR = glm::vec3(0, 0, 0);
