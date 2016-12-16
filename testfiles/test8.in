@@ -19,5 +19,5 @@ solid  0 1 0
 scale 2 2 2
 2
 0 2 0 sphere 0 0 0 1500
-1 0 1 0  trianglemesh testfiles/bunny.off 
+1 0 0 trianglemesh testfiles/bunny.off 
 
