@@ -80,6 +80,7 @@ int main(){
 		} else 
 			delete obj_garbage;
   }
+  finishes.clear();
 
   return 0;
 }
